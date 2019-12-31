@@ -13,10 +13,13 @@ namespace ReallyClient
         static void Main(string[] args)
         {
             SimpleTcpClient client = new SimpleTcpClient();
-            client.Delimiter = 0x61;
-            client.DelimiterDataReceived += (s, msg) =>
+            client.DelimiterDataReceived += (s, pack) =>
             {
-                Console.WriteLine(msg.MessageString);
+                Console.WriteLine($"PACKET:\n{pack.PacketType}");
+            };
+            client.DataReceived += (s, pack) =>
+            {
+                Console.WriteLine($"PACKET:\n{pack.PacketType}");
             };
             while (!client.TcpClient.Connected)
             {
@@ -27,7 +30,7 @@ namespace ReallyClient
                 catch { Console.WriteLine("Reconnecting..."); }
             }
             Console.WriteLine("Connected!");
-            var replyMsg = client.WriteLineAndGetReply("Hello!", TimeSpan.FromSeconds(3));
+            client.WritePacket(new SimpleTCPPlus.Common.Packet("JSON", "INIT", "NULL"));
             new Thread(() => { while (true) { } }).Start();
         }
     }

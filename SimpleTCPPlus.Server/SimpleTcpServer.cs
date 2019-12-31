@@ -16,19 +16,18 @@ namespace SimpleTCPPlus.Server
     {
         public SimpleTcpServer()
         {
-            Delimiter = 0x13;
             StringEncoder = Encoding.UTF8;
         }
 
         private List<ServerListener> _listeners = new List<ServerListener>();
-        public byte Delimiter { get; set; }
+        public byte Delimiter { get; } = 0x13;
         public Encoding StringEncoder { get; set; }
         public bool AutoTrimStrings { get; set; }
 
         public event EventHandler<TcpClient> ClientConnected;
         public event EventHandler<TcpClient> ClientDisconnected;
-        public event EventHandler<Message> DelimiterDataReceived;
-        public event EventHandler<Message> DataReceived;
+        public event EventHandler<Packet> DelimiterDataReceived;
+        public event EventHandler<Packet> DataReceived;
 
         public IEnumerable<IPAddress> GetIPAddresses()
         {
@@ -215,16 +214,17 @@ namespace SimpleTCPPlus.Server
             }
         }
 
-        internal void NotifyDelimiterMessageRx(ServerListener listener, TcpClient client, byte[] msg)
+        internal void NotifyDelimiterMessageRx(byte[] msg)
         {
-            Message m = new Message(msg, client, StringEncoder, Delimiter, AutoTrimStrings);
-            DelimiterDataReceived?.Invoke(this, m);
+            //Message m = new Message(msg, client, StringEncoder, Delimiter, AutoTrimStrings);
+            Packet pack = PacketUtils.BytesToPacket(msg);
+            DelimiterDataReceived?.Invoke(this, pack);
         }
 
-        internal void NotifyEndTransmissionRx(Server.ServerListener listener, TcpClient client, byte[] msg)
+        internal void NotifyEndTransmissionRx(byte[] msg)
         {
-            Message m = new Message(msg, client, StringEncoder, Delimiter, AutoTrimStrings);
-            DataReceived?.Invoke(this, m);
+            Packet pack = PacketUtils.BytesToPacket(msg);
+            DataReceived?.Invoke(this, pack);
         }
 
         internal void NotifyClientConnected(Server.ServerListener listener, TcpClient newClient)

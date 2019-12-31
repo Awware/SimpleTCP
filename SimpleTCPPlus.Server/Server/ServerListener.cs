@@ -15,8 +15,7 @@ namespace SimpleTCPPlus.Server
         private List<TcpClient> _disconnectedClients = new List<TcpClient>();
         private SimpleTcpServer _parent = null;
         private Dictionary<string, List<byte>> _clientBuffers = new Dictionary<string, List<byte>>();
-        private byte _delimiter = 0x13;
-        private Thread _rxThread = null;
+        private byte Delimiter { get; set; }
 
         public int ConnectedClientsCount
         {
@@ -99,7 +98,7 @@ namespace SimpleTCPPlus.Server
                 _parent.NotifyClientConnected(this, newClient);
             }
             
-            _delimiter = _parent.Delimiter;
+            Delimiter = _parent.Delimiter;
 
             foreach (var c in _connectedClients)
             {
@@ -123,19 +122,18 @@ namespace SimpleTCPPlus.Server
                         _clientBuffers.Add(clientKey, new List<byte>());
 
                     List<byte> clientBuffer = _clientBuffers[clientKey];
-
-                    if (nextByte[0] == _delimiter)
+                    if (nextByte[0] == Delimiter)
                     {
                         byte[] msg = clientBuffer.ToArray();
                         clientBuffer.Clear();
-                        _parent.NotifyDelimiterMessageRx(this, c, msg);
+                        _parent.NotifyDelimiterMessageRx(msg);
                     } 
                     else
                         clientBuffer.AddRange(nextByte);
                 }
 
                 if (bytesReceived.Count > 0)
-                    _parent.NotifyEndTransmissionRx(this, c, bytesReceived.ToArray());
+                    _parent.NotifyEndTransmissionRx(bytesReceived.ToArray());
             }
         }
     }

@@ -16,17 +16,16 @@ namespace SimpleTCPPlus.Client
 		{
 			StringEncoder = System.Text.Encoding.UTF8;
 			ReadLoopIntervalMs = 10;
-			Delimiter = 0x13;
 			TcpClient = new TcpClient();
 		}
 
 		private Thread _rxThread = null;
 		private List<byte> _queuedMsg = new List<byte>();
-		public byte Delimiter { get; set; }
+		public byte Delimiter { get; } = 0x13;
 		public Encoding StringEncoder { get; set; }
 
-		public event EventHandler<Message> DelimiterDataReceived;
-		public event EventHandler<Message> DataReceived;
+		public event EventHandler<Packet> DelimiterDataReceived;
+		public event EventHandler<Packet> DataReceived;
 
 		internal bool QueueStop { get; set; }
 		internal int ReadLoopIntervalMs { get; set; }
@@ -89,8 +88,6 @@ namespace SimpleTCPPlus.Client
 			if (TcpClient == null) { return; }
 			if (TcpClient.Connected == false) { return; }
 
-			var delimiter = this.Delimiter;
-
 			int bytesAvailable = TcpClient.Available;
 			if (bytesAvailable == 0)
 			{
@@ -105,7 +102,7 @@ namespace SimpleTCPPlus.Client
 				byte[] nextByte = new byte[1];
 				TcpClient.Client.Receive(nextByte, 0, 1, SocketFlags.None);
 				bytesReceived.AddRange(nextByte);
-				if (nextByte[0] == delimiter)
+				if (nextByte[0] == Delimiter)
 				{
 					byte[] msg = _queuedMsg.ToArray();
 					_queuedMsg.Clear();
@@ -121,20 +118,15 @@ namespace SimpleTCPPlus.Client
 
 		private void NotifyDelimiterMessageRx(TcpClient client, byte[] msg)
 		{
-			if (DelimiterDataReceived != null)
-			{
-				Message m = new Message(msg, client, StringEncoder, Delimiter, AutoTrimStrings);
-				DelimiterDataReceived(this, m);
-			}
+			//Message m = new Message(msg, client, StringEncoder, Delimiter, AutoTrimStrings);
+			Packet pack = PacketUtils.BytesToPacket(msg);
+			DelimiterDataReceived?.Invoke(this, pack);
 		}
 
 		private void NotifyEndTransmissionRx(TcpClient client, byte[] msg)
 		{
-			if (DataReceived != null)
-			{
-				Message m = new Message(msg, client, StringEncoder, Delimiter, AutoTrimStrings);
-				DataReceived(this, m);
-			}
+			Packet pack = PacketUtils.BytesToPacket(msg);
+			DataReceived?.Invoke(this, pack);
 		}
 
 		public void Write(byte[] data)
@@ -143,38 +135,50 @@ namespace SimpleTCPPlus.Client
 			TcpClient.GetStream().Write(data, 0, data.Length);
 		}
 
-		public void Write(string data)
+		//public void Write(string data)
+		//{
+		//	if (data == null) { return; }
+		//	Write(StringEncoder.GetBytes(data));
+		//}
+
+		//public void WriteLine(string data)
+		//{
+		//	if (string.IsNullOrEmpty(data)) { return; }
+		//	if (data.LastOrDefault() != Delimiter)
+		//		Write(data + StringEncoder.GetString(new byte[] { Delimiter }));
+		//	else
+		//		Write(data);
+		//}
+
+		//public Message WriteLineAndGetReply(string data, TimeSpan timeout)
+		//{
+		//	Message mReply = null;
+		//	this.DataReceived += (s, e) => { mReply = e; };
+		//	WriteLine(data);
+
+		//	Stopwatch sw = new Stopwatch();
+		//	sw.Start();
+
+		//	while (mReply == null && sw.Elapsed < timeout)
+		//	{
+		//		Thread.Sleep(10);
+		//	}
+
+		//	sw.Stop();
+
+		//	return mReply;
+		//}
+
+		public void WritePacket(Packet pack)
 		{
-			if (data == null) { return; }
-			Write(StringEncoder.GetBytes(data));
+			Write(AddByteToBytes(PacketUtils.PacketToBytes(pack), Delimiter));
 		}
-
-		public void WriteLine(string data)
+		private byte[] AddByteToBytes(byte[] array, byte b)
 		{
-			if (string.IsNullOrEmpty(data)) { return; }
-			if (data.LastOrDefault() != Delimiter)
-				Write(data + StringEncoder.GetString(new byte[] { Delimiter }));
-			else
-				Write(data);
-		}
-
-		public Message WriteLineAndGetReply(string data, TimeSpan timeout)
-		{
-			Message mReply = null;
-			this.DataReceived += (s, e) => { mReply = e; };
-			WriteLine(data);
-
-			Stopwatch sw = new Stopwatch();
-			sw.Start();
-
-			while (mReply == null && sw.Elapsed < timeout)
-			{
-				Thread.Sleep(10);
-			}
-
-			sw.Stop();
-
-			return mReply;
+			byte[] newArray = new byte[array.Length + 1];
+			array.CopyTo(newArray, 1);
+			newArray[0] = b;
+			return newArray;
 		}
 
 
