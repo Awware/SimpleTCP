@@ -43,15 +43,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="Client.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SimpleTCP\SimpleTCP.Client.csproj">
-      <Project>{C9C99F87-E188-49D2-A323-09FE79F39F8D}</Project>
+    <ProjectReference Include="..\SimpleTCP.Client\SimpleTCP.Client.csproj">
+      <Project>{c9c99f87-e188-49d2-a323-09fe79f39f8d}</Project>
       <Name>SimpleTCP.Client</Name>
     </ProjectReference>
   </ItemGroup>

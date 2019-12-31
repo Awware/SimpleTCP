@@ -3,16 +3,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ReallyClient
 {
-    class Program
+    class Client
     {
         static void Main(string[] args)
         {
             SimpleTcpClient client = new SimpleTcpClient();
             client.Delimiter = 0x61;
+            client.DelimiterDataReceived += (s, msg) =>
+            {
+                Console.WriteLine(msg.MessageString);
+            };
             while (!client.TcpClient.Connected)
             {
                 try
@@ -23,6 +28,7 @@ namespace ReallyClient
             }
             Console.WriteLine("Connected!");
             var replyMsg = client.WriteLineAndGetReply("Hello!", TimeSpan.FromSeconds(3));
+            new Thread(() => { while (true) { } }).Start();
         }
     }
 }
