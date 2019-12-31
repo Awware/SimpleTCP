@@ -112,15 +112,11 @@ namespace SimpleTCPPlus.Client
 					NotifyDelimiterMessageRx(TcpClient, msg);
 				}
 				else
-				{
 					_queuedMsg.AddRange(nextByte);
-				}
 			}
 
 			if (bytesReceived.Count > 0)
-			{
 				NotifyEndTransmissionRx(TcpClient, bytesReceived.ToArray());
-			}
 		}
 
 		private void NotifyDelimiterMessageRx(TcpClient client, byte[] msg)
@@ -157,13 +153,9 @@ namespace SimpleTCPPlus.Client
 		{
 			if (string.IsNullOrEmpty(data)) { return; }
 			if (data.LastOrDefault() != Delimiter)
-			{
 				Write(data + StringEncoder.GetString(new byte[] { Delimiter }));
-			}
 			else
-			{
 				Write(data);
-			}
 		}
 
 		public Message WriteLineAndGetReply(string data, TimeSpan timeout)
@@ -179,6 +171,8 @@ namespace SimpleTCPPlus.Client
 			{
 				Thread.Sleep(10);
 			}
+
+			sw.Stop();
 
 			return mReply;
 		}

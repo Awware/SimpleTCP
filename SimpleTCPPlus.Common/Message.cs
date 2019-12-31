@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SimpleTCPPlus.Common
 {
@@ -38,9 +35,7 @@ namespace SimpleTCPPlus.Common
             get
             {
                 if (_autoTrim)
-                {
                     return _encoder.GetString(Data).Trim();
-                }
 
                 return _encoder.GetString(Data);
             }
@@ -61,12 +56,9 @@ namespace SimpleTCPPlus.Common
         {
             if (string.IsNullOrEmpty(data)) { return; }
             if (data.LastOrDefault() != _writeLineDelimiter)
-            {
                 Reply(data + _encoder.GetString(new byte[] { _writeLineDelimiter }));
-            } else
-            {
+            else
                 Reply(data);
-            }
         }
     }
 }

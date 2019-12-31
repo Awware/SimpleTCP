@@ -39,14 +39,6 @@ namespace SimpleTCPPlus.Server
             ThreadPool.QueueUserWorkItem(ListenerLoop);
         }
 
-        private void StartThread()
-        {
-            if (_rxThread != null) { return; }
-            _rxThread = new Thread(ListenerLoop);
-            _rxThread.IsBackground = true;
-            _rxThread.Start();
-        }
-
         internal bool QueueStop { get; set; }
         internal IPAddress IPAddress { get; private set; }
         internal int Port { get; private set; }
@@ -56,7 +48,7 @@ namespace SimpleTCPPlus.Server
 
 
 		
-	private void ListenerLoop(object state)
+	    private void ListenerLoop(object state)
         {
             while (!QueueStop)
             {
@@ -115,8 +107,7 @@ namespace SimpleTCPPlus.Server
 		        if ( IsSocketConnected(c.Client) == false)
                     _disconnectedClients.Add(c);
 		    
-                int bytesAvailable = c.Available;
-                if (bytesAvailable == 0)
+                if (c.Available == 0)
                     continue;
 
                 List<byte> bytesReceived = new List<byte>();
@@ -129,9 +120,7 @@ namespace SimpleTCPPlus.Server
 
                     string clientKey = c.Client.RemoteEndPoint.ToString();
                     if (!_clientBuffers.ContainsKey(clientKey))
-                    {
                         _clientBuffers.Add(clientKey, new List<byte>());
-                    }
 
                     List<byte> clientBuffer = _clientBuffers[clientKey];
 

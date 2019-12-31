@@ -84,13 +84,9 @@ namespace SimpleTCPPlus.Server
         {
             if (string.IsNullOrEmpty(data)) { return; }
             if (data.LastOrDefault() != Delimiter)
-            {
                 Broadcast(data + StringEncoder.GetString(new byte[] { Delimiter }));
-            }
             else
-            {
                 Broadcast(data);
-            }
         }
 
         private int RankIpAddress(IPAddress addr)
@@ -221,20 +217,14 @@ namespace SimpleTCPPlus.Server
 
         internal void NotifyDelimiterMessageRx(ServerListener listener, TcpClient client, byte[] msg)
         {
-            if (DelimiterDataReceived != null)
-            {
-                Message m = new Message(msg, client, StringEncoder, Delimiter, AutoTrimStrings);
-                DelimiterDataReceived(this, m);
-            }
+            Message m = new Message(msg, client, StringEncoder, Delimiter, AutoTrimStrings);
+            DelimiterDataReceived?.Invoke(this, m);
         }
 
         internal void NotifyEndTransmissionRx(Server.ServerListener listener, TcpClient client, byte[] msg)
         {
-            if (DataReceived != null)
-            {
-                Message m = new Message(msg, client, StringEncoder, Delimiter, AutoTrimStrings);
-                DataReceived(this, m);
-            }
+            Message m = new Message(msg, client, StringEncoder, Delimiter, AutoTrimStrings);
+            DataReceived?.Invoke(this, m);
         }
 
         internal void NotifyClientConnected(Server.ServerListener listener, TcpClient newClient)
