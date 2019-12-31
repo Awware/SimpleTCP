@@ -50,6 +50,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SimpleTCPPlus.Common\SimpleTCPPlus.Common.csproj">
+      <Project>{883E0C14-F82B-4300-992D-F6205E4B933E}</Project>
+      <Name>SimpleTCPPlus.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SimpleTCPPlus.Server\SimpleTCPPlus.Server.csproj">
       <Project>{4132C94D-20F1-4D36-BC71-CD5C99C8B31C}</Project>
       <Name>SimpleTCPPlus.Server</Name>

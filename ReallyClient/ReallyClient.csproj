@@ -50,9 +50,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SimpleTCP.Client\SimpleTCPPlus.Client.csproj">
-      <Project>{c9c99f87-e188-49d2-a323-09fe79f39f8d}</Project>
+    <ProjectReference Include="..\SimpleTCPPlus.Client\SimpleTCPPlus.Client.csproj">
+      <Project>{C9C99F87-E188-49D2-A323-09FE79F39F8D}</Project>
       <Name>SimpleTCPPlus.Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SimpleTCPPlus.Common\SimpleTCPPlus.Common.csproj">
+      <Project>{883E0C14-F82B-4300-992D-F6205E4B933E}</Project>
+      <Name>SimpleTCPPlus.Common</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

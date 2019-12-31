@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SimpleTCPPlus_Server.Server
+namespace SimpleTCPPlus.Server
 {
 	/// <summary>
 	/// Wrapper around TcpListener that exposes the Active property

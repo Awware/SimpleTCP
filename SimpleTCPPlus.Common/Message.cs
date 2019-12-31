@@ -5,8 +5,9 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SimpleTCPPlus_Client
+namespace SimpleTCPPlus.Common
 {
+    //Integrate packets
     public class Message
     {
         private Encoding _encoder = null;
@@ -14,7 +15,7 @@ namespace SimpleTCPPlus_Client
         private bool _autoTrim = false;
 
         public TcpClient TcpClient { get; } = null;
-        internal Message(byte[] data, TcpClient tcpClient, Encoding stringEncoder, byte lineDelimiter)
+        public Message(byte[] data, TcpClient tcpClient, Encoding stringEncoder, byte lineDelimiter)
         {
             Data = data;
             TcpClient = tcpClient;
@@ -22,7 +23,7 @@ namespace SimpleTCPPlus_Client
             _writeLineDelimiter = lineDelimiter;
         }
 
-        internal Message(byte[] data, TcpClient tcpClient, Encoding stringEncoder, byte lineDelimiter, bool autoTrim)
+        public Message(byte[] data, TcpClient tcpClient, Encoding stringEncoder, byte lineDelimiter, bool autoTrim)
         {
             Data = data;
             TcpClient = tcpClient;

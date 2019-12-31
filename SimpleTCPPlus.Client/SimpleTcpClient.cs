@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SimpleTCPPlus.Common;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SimpleTCPPlus_Client
+namespace SimpleTCPPlus.Client
 {
 	public class SimpleTcpClient : IDisposable
 	{

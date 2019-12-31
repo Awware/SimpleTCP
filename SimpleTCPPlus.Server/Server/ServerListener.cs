@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SimpleTCPPlus_Server.Server
+namespace SimpleTCPPlus.Server
 {
     internal class ServerListener
     {
