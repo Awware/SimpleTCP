@@ -14,7 +14,7 @@ namespace SimpleTCP_Server.Server
         private List<TcpClient> _connectedClients = new List<TcpClient>();
         private List<TcpClient> _disconnectedClients = new List<TcpClient>();
         private SimpleTcpServer _parent = null;
-        private List<byte> _queuedMsg = new List<byte>();
+        private Dictionary<string, List<byte>> _clientBuffers = new Dictionary<string, List<byte>>();
         private byte _delimiter = 0x13;
         private Thread _rxThread = null;
 
@@ -36,7 +36,7 @@ namespace SimpleTCP_Server.Server
             Listener = new TcpListenerEx(ipAddress, port);
             Listener.Start();
 
-            System.Threading.ThreadPool.QueueUserWorkItem(ListenerLoop);
+            ThreadPool.QueueUserWorkItem(ListenerLoop);
         }
 
         private void StartThread()
@@ -127,14 +127,22 @@ namespace SimpleTCP_Server.Server
                     c.Client.Receive(nextByte, 0, 1, SocketFlags.None);
                     bytesReceived.AddRange(nextByte);
 
+                    string clientKey = c.Client.RemoteEndPoint.ToString();
+                    if (!_clientBuffers.ContainsKey(clientKey))
+                    {
+                        _clientBuffers.Add(clientKey, new List<byte>());
+                    }
+
+                    List<byte> clientBuffer = _clientBuffers[clientKey];
+
                     if (nextByte[0] == _delimiter)
                     {
-                        byte[] msg = _queuedMsg.ToArray();
-                        _queuedMsg.Clear();
+                        byte[] msg = clientBuffer.ToArray();
+                        clientBuffer.Clear();
                         _parent.NotifyDelimiterMessageRx(this, c, msg);
                     } 
                     else
-                        _queuedMsg.AddRange(nextByte);
+                        clientBuffer.AddRange(nextByte);
                 }
 
                 if (bytesReceived.Count > 0)
