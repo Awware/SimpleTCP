@@ -9,19 +9,19 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SimpleTCP
+namespace SimpleTCP_Server.Server
 {
     public class SimpleTcpServer
     {
         public SimpleTcpServer()
         {
             Delimiter = 0x13;
-            StringEncoder = System.Text.Encoding.UTF8;
+            StringEncoder = Encoding.UTF8;
         }
 
-        private List<Server.ServerListener> _listeners = new List<Server.ServerListener>();
+        private List<ServerListener> _listeners = new List<ServerListener>();
         public byte Delimiter { get; set; }
-        public System.Text.Encoding StringEncoder { get; set; }
+        public Encoding StringEncoder { get; set; }
         public bool AutoTrimStrings { get; set; }
 
         public event EventHandler<TcpClient> ClientConnected;
@@ -195,7 +195,7 @@ namespace SimpleTCP
 
 		public SimpleTcpServer Start(IPAddress ipAddress, int port)
         {
-            Server.ServerListener listener = new Server.ServerListener(this, ipAddress, port);
+            ServerListener listener = new ServerListener(this, ipAddress, port);
             _listeners.Add(listener);
 
             return this;
@@ -212,12 +212,13 @@ namespace SimpleTCP
 
         public int ConnectedClientsCount
         {
-            get {
+            get 
+            {
                 return _listeners.Sum(l => l.ConnectedClientsCount);
             }
         }
 
-        internal void NotifyDelimiterMessageRx(Server.ServerListener listener, TcpClient client, byte[] msg)
+        internal void NotifyDelimiterMessageRx(ServerListener listener, TcpClient client, byte[] msg)
         {
             if (DelimiterDataReceived != null)
             {
@@ -237,18 +238,12 @@ namespace SimpleTCP
 
         internal void NotifyClientConnected(Server.ServerListener listener, TcpClient newClient)
         {
-            if (ClientConnected != null)
-            {
-                ClientConnected(this, newClient);
-            }
+            ClientConnected?.Invoke(this, newClient);
         }
 
         internal void NotifyClientDisconnected(Server.ServerListener listener, TcpClient disconnectedClient)
         {
-            if (ClientDisconnected != null)
-            {
-                ClientDisconnected(this, disconnectedClient);
-            }
+            ClientDisconnected?.Invoke(this, disconnectedClient);
         }
 
 		#region Debug logging

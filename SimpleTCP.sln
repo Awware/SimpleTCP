@@ -1,11 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTCP", "SimpleTCP\SimpleTCP.csproj", "{C9C99F87-E188-49D2-A323-09FE79F39F8D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTCP.Client", "SimpleTCP.Client\SimpleTCP.Client.csproj", "{C9C99F87-E188-49D2-A323-09FE79F39F8D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTCP.Tests", "SimpleTCP.Tests\SimpleTCP.Tests.csproj", "{C5C05BEB-7275-4F35-B783-9955C8B04B81}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReallyClient", "ReallyClient\ReallyClient.csproj", "{B1C90043-AAB2-4A3B-A3BD-BA81ABF1DB75}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReallyServer", "ReallyServer\ReallyServer.csproj", "{30ED6050-74CB-4830-9E2F-D8E7DCC8676C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTCP.Server", "SimpleTCP.Server\SimpleTCP.Server.csproj", "{4132C94D-20F1-4D36-BC71-CD5C99C8B31C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,12 +21,23 @@ Global
 		{C9C99F87-E188-49D2-A323-09FE79F39F8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9C99F87-E188-49D2-A323-09FE79F39F8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9C99F87-E188-49D2-A323-09FE79F39F8D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C5C05BEB-7275-4F35-B783-9955C8B04B81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C5C05BEB-7275-4F35-B783-9955C8B04B81}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C5C05BEB-7275-4F35-B783-9955C8B04B81}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C5C05BEB-7275-4F35-B783-9955C8B04B81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1C90043-AAB2-4A3B-A3BD-BA81ABF1DB75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1C90043-AAB2-4A3B-A3BD-BA81ABF1DB75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1C90043-AAB2-4A3B-A3BD-BA81ABF1DB75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1C90043-AAB2-4A3B-A3BD-BA81ABF1DB75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30ED6050-74CB-4830-9E2F-D8E7DCC8676C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30ED6050-74CB-4830-9E2F-D8E7DCC8676C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30ED6050-74CB-4830-9E2F-D8E7DCC8676C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30ED6050-74CB-4830-9E2F-D8E7DCC8676C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4132C94D-20F1-4D36-BC71-CD5C99C8B31C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4132C94D-20F1-4D36-BC71-CD5C99C8B31C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4132C94D-20F1-4D36-BC71-CD5C99C8B31C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4132C94D-20F1-4D36-BC71-CD5C99C8B31C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0D871732-D3EE-4C99-B4A0-47A607C944F0}
 	EndGlobalSection
 EndGlobal

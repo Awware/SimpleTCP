@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SimpleTCP
+namespace SimpleTCP_Client
 {
 	public class SimpleTcpClient : IDisposable
 	{
@@ -16,13 +16,13 @@ namespace SimpleTCP
 			StringEncoder = System.Text.Encoding.UTF8;
 			ReadLoopIntervalMs = 10;
 			Delimiter = 0x13;
+			TcpClient = new TcpClient();
 		}
 
 		private Thread _rxThread = null;
 		private List<byte> _queuedMsg = new List<byte>();
 		public byte Delimiter { get; set; }
-		public System.Text.Encoding StringEncoder { get; set; }
-		private TcpClient _client = null;
+		public Encoding StringEncoder { get; set; }
 
 		public event EventHandler<Message> DelimiterDataReceived;
 		public event EventHandler<Message> DataReceived;
@@ -38,8 +38,7 @@ namespace SimpleTCP
 				throw new ArgumentNullException("hostNameOrIpAddress");
 			}
 
-			_client = new TcpClient();
-			_client.Connect(hostNameOrIpAddress, port);
+			TcpClient.Connect(hostNameOrIpAddress, port);
 
 			StartRxThread();
 
@@ -57,13 +56,13 @@ namespace SimpleTCP
 
 		public SimpleTcpClient Disconnect()
 		{
-			if (_client == null) { return this; }
-			_client.Close();
-			_client = null;
+			if (TcpClient == null) { return this; }
+			TcpClient.Close();
+			TcpClient = null;
 			return this;
 		}
 
-		public TcpClient TcpClient { get { return _client; } }
+		public TcpClient TcpClient { get; set; } = null;
 
 		private void ListenerLoop(object state)
 		{
@@ -78,7 +77,7 @@ namespace SimpleTCP
 
 				}
 
-				System.Threading.Thread.Sleep(ReadLoopIntervalMs);
+				Thread.Sleep(ReadLoopIntervalMs);
 			}
 
 			_rxThread = null;
@@ -86,31 +85,30 @@ namespace SimpleTCP
 
 		private void RunLoopStep()
 		{
-			if (_client == null) { return; }
-			if (_client.Connected == false) { return; }
+			if (TcpClient == null) { return; }
+			if (TcpClient.Connected == false) { return; }
 
 			var delimiter = this.Delimiter;
-			var c = _client;
 
-			int bytesAvailable = c.Available;
+			int bytesAvailable = TcpClient.Available;
 			if (bytesAvailable == 0)
 			{
-				System.Threading.Thread.Sleep(10);
+				Thread.Sleep(10);
 				return;
 			}
 
 			List<byte> bytesReceived = new List<byte>();
 
-			while (c.Available > 0 && c.Connected)
+			while (TcpClient.Available > 0 && TcpClient.Connected)
 			{
 				byte[] nextByte = new byte[1];
-				c.Client.Receive(nextByte, 0, 1, SocketFlags.None);
+				TcpClient.Client.Receive(nextByte, 0, 1, SocketFlags.None);
 				bytesReceived.AddRange(nextByte);
 				if (nextByte[0] == delimiter)
 				{
 					byte[] msg = _queuedMsg.ToArray();
 					_queuedMsg.Clear();
-					NotifyDelimiterMessageRx(c, msg);
+					NotifyDelimiterMessageRx(TcpClient, msg);
 				}
 				else
 				{
@@ -120,7 +118,7 @@ namespace SimpleTCP
 
 			if (bytesReceived.Count > 0)
 			{
-				NotifyEndTransmissionRx(c, bytesReceived.ToArray());
+				NotifyEndTransmissionRx(TcpClient, bytesReceived.ToArray());
 			}
 		}
 
@@ -144,8 +142,8 @@ namespace SimpleTCP
 
 		public void Write(byte[] data)
 		{
-			if (_client == null) { throw new Exception("Cannot send data to a null TcpClient (check to see if Connect was called)"); }
-			_client.GetStream().Write(data, 0, data.Length);
+			if (TcpClient == null) { throw new Exception("Cannot send data to a null TcpClient (check to see if Connect was called)"); }
+			TcpClient.GetStream().Write(data, 0, data.Length);
 		}
 
 		public void Write(string data)
@@ -178,7 +176,7 @@ namespace SimpleTCP
 
 			while (mReply == null && sw.Elapsed < timeout)
 			{
-				System.Threading.Thread.Sleep(10);
+				Thread.Sleep(10);
 			}
 
 			return mReply;
@@ -201,14 +199,14 @@ namespace SimpleTCP
 				// TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
 				// TODO: set large fields to null.
 				QueueStop = true;
-				if (_client != null)
+				if (TcpClient != null)
 				{
 					try
 					{
-						_client.Close();
+						TcpClient.Close();
 					}
 					catch { }
-					_client = null;
+					TcpClient = null;
 				}
 
 				disposedValue = true;

@@ -7,11 +7,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SimpleTCP.Server
+namespace SimpleTCP_Server.Server
 {
     internal class ServerListener
     {
-        private TcpListenerEx _listener = null;
         private List<TcpClient> _connectedClients = new List<TcpClient>();
         private List<TcpClient> _disconnectedClients = new List<TcpClient>();
         private SimpleTcpServer _parent = null;
@@ -34,8 +33,8 @@ namespace SimpleTCP.Server
             Port = port;
             ReadLoopIntervalMs = 10;
 
-            _listener = new TcpListenerEx(ipAddress, port);
-            _listener.Start();
+            Listener = new TcpListenerEx(ipAddress, port);
+            Listener.Start();
 
             System.Threading.ThreadPool.QueueUserWorkItem(ListenerLoop);
         }
@@ -53,7 +52,7 @@ namespace SimpleTCP.Server
         internal int Port { get; private set; }
         internal int ReadLoopIntervalMs { get; set; }
 
-        internal TcpListenerEx Listener { get { return _listener; } }
+        internal TcpListenerEx Listener { get; } = null;
 
 
 		
@@ -70,24 +69,23 @@ namespace SimpleTCP.Server
 
                 }
 
-                System.Threading.Thread.Sleep(ReadLoopIntervalMs);
+                Thread.Sleep(ReadLoopIntervalMs);
             }
-			_listener.Stop();
+            Listener.Stop();
         }
 
 	    
-	bool IsSocketConnected(Socket s)
-	{
-	    // https://stackoverflow.com/questions/2661764/how-to-check-if-a-socket-is-connected-disconnected-in-c
-	    bool part1 = s.Poll(1000, SelectMode.SelectRead);
-	    bool part2 = (s.Available == 0);
-	    if ((part1 && part2) || !s.Connected)
-		return false;
-	    else
-		return true;
-	}
+	    private bool IsSocketConnected(Socket s)
+	    {
+	        // https://stackoverflow.com/questions/2661764/how-to-check-if-a-socket-is-connected-disconnected-in-c
+	        bool part1 = s.Poll(1000, SelectMode.SelectRead);
+	        bool part2 = (s.Available == 0);
+	        if ((part1 && part2) || !s.Connected)
+		        return false;
+	        else
+		        return true;
+	    }
 
-	    
         private void RunLoopStep()
         {
             if (_disconnectedClients.Count > 0)
@@ -102,9 +100,9 @@ namespace SimpleTCP.Server
                 }
             }
 
-            if (_listener.Pending())
+            if (Listener.Pending())
             {
-				var newClient = _listener.AcceptTcpClient();
+				var newClient = Listener.AcceptTcpClient();
 				_connectedClients.Add(newClient);
                 _parent.NotifyClientConnected(this, newClient);
             }
@@ -114,17 +112,12 @@ namespace SimpleTCP.Server
             foreach (var c in _connectedClients)
             {
 		
-		if ( IsSocketConnected(c.Client) == false)
-                {
+		        if ( IsSocketConnected(c.Client) == false)
                     _disconnectedClients.Add(c);
-                }
 		    
                 int bytesAvailable = c.Available;
                 if (bytesAvailable == 0)
-                {
-                    //Thread.Sleep(10);
                     continue;
-                }
 
                 List<byte> bytesReceived = new List<byte>();
 
@@ -139,16 +132,13 @@ namespace SimpleTCP.Server
                         byte[] msg = _queuedMsg.ToArray();
                         _queuedMsg.Clear();
                         _parent.NotifyDelimiterMessageRx(this, c, msg);
-                    } else
-                    {
+                    } 
+                    else
                         _queuedMsg.AddRange(nextByte);
-                    }
                 }
 
                 if (bytesReceived.Count > 0)
-                {
                     _parent.NotifyEndTransmissionRx(this, c, bytesReceived.ToArray());
-                }  
             }
         }
     }
