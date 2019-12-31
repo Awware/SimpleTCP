@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SimpleTCP_Server.Server
+namespace SimpleTCPPlus_Server
 {
     public class SimpleTcpServer
     {

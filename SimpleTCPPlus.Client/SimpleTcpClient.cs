@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SimpleTCP_Client
+namespace SimpleTCPPlus_Client
 {
 	public class SimpleTcpClient : IDisposable
 	{

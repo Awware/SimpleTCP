@@ -1,4 +1,4 @@
-﻿using SimpleTCP_Client;
+﻿using SimpleTCPPlus_Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;

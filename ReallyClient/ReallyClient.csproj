@@ -50,9 +50,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SimpleTCP.Client\SimpleTCP.Client.csproj">
+    <ProjectReference Include="..\SimpleTCP.Client\SimpleTCPPlus.Client.csproj">
       <Project>{c9c99f87-e188-49d2-a323-09fe79f39f8d}</Project>
-      <Name>SimpleTCP.Client</Name>
+      <Name>SimpleTCPPlus.Client</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -5,14 +5,13 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SimpleTCP_Client
+namespace SimpleTCPPlus_Server
 {
     public class Message
     {
         private Encoding _encoder = null;
         private byte _writeLineDelimiter;
         private bool _autoTrim = false;
-
         public TcpClient TcpClient { get; } = null;
         internal Message(byte[] data, TcpClient tcpClient, Encoding stringEncoder, byte lineDelimiter)
         {
