@@ -9,14 +9,15 @@ namespace SimpleTCP_Client
 {
     public class Message
     {
-        private TcpClient _tcpClient;
-        private System.Text.Encoding _encoder = null;
+        private Encoding _encoder = null;
         private byte _writeLineDelimiter;
         private bool _autoTrim = false;
+
+        public TcpClient TcpClient { get; } = null;
         internal Message(byte[] data, TcpClient tcpClient, System.Text.Encoding stringEncoder, byte lineDelimiter)
         {
             Data = data;
-            _tcpClient = tcpClient;
+            TcpClient = tcpClient;
             _encoder = stringEncoder;
             _writeLineDelimiter = lineDelimiter;
         }
@@ -24,7 +25,7 @@ namespace SimpleTCP_Client
         internal Message(byte[] data, TcpClient tcpClient, System.Text.Encoding stringEncoder, byte lineDelimiter, bool autoTrim)
         {
             Data = data;
-            _tcpClient = tcpClient;
+            TcpClient = tcpClient;
             _encoder = stringEncoder;
             _writeLineDelimiter = lineDelimiter;
             _autoTrim = autoTrim;
@@ -46,7 +47,7 @@ namespace SimpleTCP_Client
 
         public void Reply(byte[] data)
         {
-            _tcpClient.GetStream().Write(data, 0, data.Length);
+            TcpClient.GetStream().Write(data, 0, data.Length);
         }
 
         public void Reply(string data)
@@ -66,7 +67,5 @@ namespace SimpleTCP_Client
                 Reply(data);
             }
         }
-
-        public TcpClient TcpClient {  get { return _tcpClient; } }
     }
 }
