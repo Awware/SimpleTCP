@@ -1,7 +1,5 @@
-# SimpleTCP
+# SimpleTCPPlus
 Straightforward and incredibly useful .NET library to handle the repetitive tasks of spinning up and working with TCP sockets (client and server).
-
-**NuGet Package:** https://www.nuget.org/packages/SimpleTCP/
 
 ![Build Status](https://ci.appveyor.com/api/projects/status/felx0b90mwgr4l4n?svg=true)
 
