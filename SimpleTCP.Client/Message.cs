@@ -14,7 +14,7 @@ namespace SimpleTCP_Client
         private bool _autoTrim = false;
 
         public TcpClient TcpClient { get; } = null;
-        internal Message(byte[] data, TcpClient tcpClient, System.Text.Encoding stringEncoder, byte lineDelimiter)
+        internal Message(byte[] data, TcpClient tcpClient, Encoding stringEncoder, byte lineDelimiter)
         {
             Data = data;
             TcpClient = tcpClient;
@@ -22,7 +22,7 @@ namespace SimpleTCP_Client
             _writeLineDelimiter = lineDelimiter;
         }
 
-        internal Message(byte[] data, TcpClient tcpClient, System.Text.Encoding stringEncoder, byte lineDelimiter, bool autoTrim)
+        internal Message(byte[] data, TcpClient tcpClient, Encoding stringEncoder, byte lineDelimiter, bool autoTrim)
         {
             Data = data;
             TcpClient = tcpClient;
