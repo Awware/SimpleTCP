@@ -12,14 +12,17 @@ namespace SimpleTCPPlus.Client
 {
 	public class SimpleTcpClient : IDisposable
 	{
-		public SimpleTcpClient()
+		public SimpleTcpClient(System.Reflection.Assembly packets)
 		{
 			StringEncoder = System.Text.Encoding.UTF8;
 			ReadLoopIntervalMs = 10;
 			TcpClient = new TcpClient();
+			PacketLoader = new GlobalPacketLoader(packets);
+			ClientPackets = PacketLoader.LoadPackets<IClientPacket>();
 		}
+		private GlobalPacketLoader PacketLoader { get; } = null;
+		private List<IClientPacket> ClientPackets { get; } = null;
 
-		private Thread _rxThread = null;
 		private List<byte> _queuedMsg = new List<byte>();
 		public byte Delimiter { get; } = 0x13;
 		public Encoding StringEncoder { get; set; }
@@ -27,9 +30,9 @@ namespace SimpleTCPPlus.Client
 		public event EventHandler<PacketWrapper> DelimiterDataReceived;
 		public event EventHandler<PacketWrapper> DataReceived;
 
+		private Thread _rxThread;
 		internal bool QueueStop { get; set; }
 		internal int ReadLoopIntervalMs { get; set; }
-		public bool AutoTrimStrings { get; set; }
 
 		public SimpleTcpClient Connect(string hostNameOrIpAddress, int port)
 		{
@@ -180,7 +183,16 @@ namespace SimpleTCPPlus.Client
 			newArray[0] = b;
 			return newArray;
 		}
-
+		private bool HasPacket(string packetType) => ClientPackets.Where(pack => pack.PacketType == packetType).Count() > 0;
+		private IClientPacket GetPacketByPacketType(string type) => ClientPackets.Where(pack => pack.PacketType == type).FirstOrDefault();
+		public void PacketHandler(PacketWrapper wrap)
+		{
+			if (HasPacket(wrap.Packet.PacketType))
+			{
+				IClientPacket packet = GetPacketByPacketType(wrap.Packet.PacketType);
+				packet.Execute(wrap, this);
+			}
+		}
 
 		#region IDisposable Support
 		private bool disposedValue = false; // To detect redundant calls

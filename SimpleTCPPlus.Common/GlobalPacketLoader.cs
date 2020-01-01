@@ -1,28 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SimpleTCPPlus.Server
+namespace SimpleTCPPlus.Common
 {
-    public class ServerPacketLoader
+    public class GlobalPacketLoader
     {
         private Assembly asm { get; }
-        public ServerPacketLoader(Assembly asm)
+        public GlobalPacketLoader(Assembly asm)
         {
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(ASM_RESOLVE);
             this.asm = asm;
         }
-        public List<IServerPacket> LoadPackets()
+        public List<T> LoadPackets<T>(params object[] args) where T : class
         {
-            List<IServerPacket> packets = new List<IServerPacket>();
+            List<T> Packets = new List<T>();
             foreach (var type in asm.GetTypes())
-                if (typeof(IServerPacket).IsAssignableFrom(type) && type != typeof(IServerPacket))
-                    packets.Add(Activator.CreateInstance(type) as IServerPacket);
-            return packets;
+                if (typeof(T).IsAssignableFrom(type) && type != typeof(T))
+                    Packets.Add(Activator.CreateInstance(type, args) as T);
+            return Packets;
         }
         private Assembly ASM_RESOLVE(object sender, ResolveEventArgs args)
         {

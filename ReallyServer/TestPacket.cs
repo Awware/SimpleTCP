@@ -11,6 +11,7 @@ namespace ReallyServer
         public void Execute(PacketWrapper wrap, SimpleTcpServer server)
         {
             Console.WriteLine("This init packet!");
+            wrap.ReplyPacket(new Packet("JSON", "S_ANSWER", "NULL"));
         }
     }
 }

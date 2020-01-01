@@ -12,10 +12,11 @@ namespace ReallyClient
     {
         static void Main(string[] args)
         {
-            SimpleTcpClient client = new SimpleTcpClient();
+            SimpleTcpClient client = new SimpleTcpClient(System.Reflection.Assembly.GetExecutingAssembly());
             client.DataReceived += (s, pack) =>
             {
                 Console.WriteLine($"PACKET:\n{pack.Packet.PacketType}");
+                client.PacketHandler(pack);
             };
             while (!client.TcpClient.Connected)
             {

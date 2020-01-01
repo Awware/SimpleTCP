@@ -17,11 +17,11 @@ namespace SimpleTCPPlus.Server
     {
         public SimpleTcpServer(Assembly packets)
         {
-            Loader = new ServerPacketLoader(packets);
-            ServerPackets = Loader.LoadPackets();
+            Loader = new GlobalPacketLoader(packets);
+            ServerPackets = Loader.LoadPackets<IServerPacket>();
         }
 
-        private ServerPacketLoader Loader { get; } = null;
+        private GlobalPacketLoader Loader { get; } = null;
         private List<IServerPacket> ServerPackets { get; } = null;
         private List<ServerListener> _listeners = new List<ServerListener>();
         public byte Delimiter { get; } = 0x13;
