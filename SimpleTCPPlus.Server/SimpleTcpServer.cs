@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,20 +15,21 @@ namespace SimpleTCPPlus.Server
 {
     public class SimpleTcpServer
     {
-        public SimpleTcpServer()
+        public SimpleTcpServer(Assembly packets)
         {
-            StringEncoder = Encoding.UTF8;
+            Loader = new ServerPacketLoader(packets);
+            ServerPackets = Loader.LoadPackets();
         }
 
+        private ServerPacketLoader Loader { get; } = null;
+        private List<IServerPacket> ServerPackets { get; } = null;
         private List<ServerListener> _listeners = new List<ServerListener>();
         public byte Delimiter { get; } = 0x13;
-        public Encoding StringEncoder { get; set; }
-        public bool AutoTrimStrings { get; set; }
 
         public event EventHandler<TcpClient> ClientConnected;
         public event EventHandler<TcpClient> ClientDisconnected;
-        public event EventHandler<Packet> DelimiterDataReceived;
-        public event EventHandler<Packet> DataReceived;
+        public event EventHandler<PacketWrapper> DelimiterDataReceived;
+        public event EventHandler<PacketWrapper> DataReceived;
 
         public IEnumerable<IPAddress> GetIPAddresses()
         {
@@ -65,27 +67,18 @@ namespace SimpleTCPPlus.Server
             return listenIps.OrderByDescending(ip => RankIpAddress(ip)).ToList();
         }
         
-        public void Broadcast(byte[] data)
+        public void Broadcast(byte[] rawPacket)
         {
             foreach(var client in _listeners.SelectMany(x => x.ConnectedClients))
             {
-                client.GetStream().Write(data, 0, data.Length);
+                client.GetStream().Write(rawPacket, 0, rawPacket.Length);
             }
         }
 
-        public void Broadcast(string data)
+        public void Broadcast(Packet packet)
         {
-            if (data == null) { return; }
-            Broadcast(StringEncoder.GetBytes(data));
-        }
-
-        public void BroadcastLine(string data)
-        {
-            if (string.IsNullOrEmpty(data)) { return; }
-            if (data.LastOrDefault() != Delimiter)
-                Broadcast(data + StringEncoder.GetString(new byte[] { Delimiter }));
-            else
-                Broadcast(data);
+            if (packet == null) { return; }
+            Broadcast(PacketUtils.PacketToBytes(packet));
         }
 
         private int RankIpAddress(IPAddress addr)
@@ -214,32 +207,42 @@ namespace SimpleTCPPlus.Server
             }
         }
 
-        internal void NotifyDelimiterMessageRx(byte[] msg)
+        internal void NotifyDelimiterMessageRx(byte[] rawPacket, TcpClient client)
         {
             //Message m = new Message(msg, client, StringEncoder, Delimiter, AutoTrimStrings);
-            Packet pack = PacketUtils.BytesToPacket(msg);
+            PacketWrapper pack = new PacketWrapper(PacketUtils.BytesToPacket(rawPacket), client);
             DelimiterDataReceived?.Invoke(this, pack);
         }
 
-        internal void NotifyEndTransmissionRx(byte[] msg)
+        internal void NotifyEndTransmissionRx(byte[] rawPacket, TcpClient client)
         {
-            Packet pack = PacketUtils.BytesToPacket(msg);
+            PacketWrapper pack = new PacketWrapper(PacketUtils.BytesToPacket(rawPacket), client);
             DataReceived?.Invoke(this, pack);
         }
 
-        internal void NotifyClientConnected(Server.ServerListener listener, TcpClient newClient)
+        internal void NotifyClientConnected(ServerListener listener, TcpClient newClient)
         {
             ClientConnected?.Invoke(this, newClient);
         }
 
-        internal void NotifyClientDisconnected(Server.ServerListener listener, TcpClient disconnectedClient)
+        internal void NotifyClientDisconnected(ServerListener listener, TcpClient disconnectedClient)
         {
             ClientDisconnected?.Invoke(this, disconnectedClient);
         }
 
-		#region Debug logging
+        internal bool HasPacket(string packetType) => ServerPackets.Where(pack => pack.PacketType == packetType).Count() > 0;
+        internal IServerPacket GetPacketByPacketType(string type) => ServerPackets.Where(pack => pack.PacketType == type).FirstOrDefault();
+        public void PacketHandler(PacketWrapper wrap)
+        {
+            if (HasPacket(wrap.Packet.PacketType))
+            {
+                IServerPacket packet = GetPacketByPacketType(wrap.Packet.PacketType);
+                packet.Execute(wrap, this);
+            }
+        }
+        #region Debug logging
 
-		[System.Diagnostics.Conditional("DEBUG")]
+        [System.Diagnostics.Conditional("DEBUG")]
 		void DebugInfo(string format, params object[] args)
 		{
 			if (_debugInfoTime == null)

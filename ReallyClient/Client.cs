@@ -13,13 +13,9 @@ namespace ReallyClient
         static void Main(string[] args)
         {
             SimpleTcpClient client = new SimpleTcpClient();
-            client.DelimiterDataReceived += (s, pack) =>
-            {
-                Console.WriteLine($"PACKET:\n{pack.PacketType}");
-            };
             client.DataReceived += (s, pack) =>
             {
-                Console.WriteLine($"PACKET:\n{pack.PacketType}");
+                Console.WriteLine($"PACKET:\n{pack.Packet.PacketType}");
             };
             while (!client.TcpClient.Connected)
             {

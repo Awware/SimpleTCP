@@ -13,14 +13,11 @@ namespace ReallyServer
         static void Main(string[] args)
         {
             Console.WriteLine("Server started");
-            var server = new SimpleTcpServer().Start(6124);
-            server.DelimiterDataReceived += (s, pack) =>
-            {
-                Console.WriteLine($"1PACKET:\n{pack.PacketType}");
-            };
+            var server = new SimpleTcpServer(System.Reflection.Assembly.GetExecutingAssembly()).Start(6124);
             server.DataReceived += (s, pack) =>
             {
-                Console.WriteLine($"2PACKET:\n{pack.PacketType}");
+                Console.WriteLine($"PACKET:\n{pack.Packet.PacketType}");
+                server.PacketHandler(pack);
             };
             new Thread(() => { while (true) { } }).Start();
         }

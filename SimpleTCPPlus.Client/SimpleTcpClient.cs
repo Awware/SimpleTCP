@@ -24,8 +24,8 @@ namespace SimpleTCPPlus.Client
 		public byte Delimiter { get; } = 0x13;
 		public Encoding StringEncoder { get; set; }
 
-		public event EventHandler<Packet> DelimiterDataReceived;
-		public event EventHandler<Packet> DataReceived;
+		public event EventHandler<PacketWrapper> DelimiterDataReceived;
+		public event EventHandler<PacketWrapper> DataReceived;
 
 		internal bool QueueStop { get; set; }
 		internal int ReadLoopIntervalMs { get; set; }
@@ -116,16 +116,16 @@ namespace SimpleTCPPlus.Client
 				NotifyEndTransmissionRx(TcpClient, bytesReceived.ToArray());
 		}
 
-		private void NotifyDelimiterMessageRx(TcpClient client, byte[] msg)
+		private void NotifyDelimiterMessageRx(TcpClient client, byte[] rawPacket)
 		{
 			//Message m = new Message(msg, client, StringEncoder, Delimiter, AutoTrimStrings);
-			Packet pack = PacketUtils.BytesToPacket(msg);
+			PacketWrapper pack = new PacketWrapper(PacketUtils.BytesToPacket(rawPacket), client);
 			DelimiterDataReceived?.Invoke(this, pack);
 		}
 
-		private void NotifyEndTransmissionRx(TcpClient client, byte[] msg)
+		private void NotifyEndTransmissionRx(TcpClient client, byte[] rawPacket)
 		{
-			Packet pack = PacketUtils.BytesToPacket(msg);
+			PacketWrapper pack = new PacketWrapper(PacketUtils.BytesToPacket(rawPacket), client);
 			DataReceived?.Invoke(this, pack);
 		}
 
