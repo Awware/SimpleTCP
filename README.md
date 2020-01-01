@@ -6,19 +6,13 @@ Straightforward and incredibly useful .NET library to handle the repetitive task
 Want a TCP server that listens on port 8910 on all the IP addresses on the machine?
 
 ```cs
-var server = new SimpleTcpServer().Start(8910);
+var server = new SimpleTcpServer(Assembly.LoadFrom("PATH TO ASSEMBLY WITH PACKETS")).Start(8910);
 ```
 
 Want a TCP client that connects to 127.0.0.1 on port 8910?
 
 ```cs
-var client = new SimpleTcpClient().Connect("127.0.0.1", 8910);
-```
-
-Want to send "Hello world!" to the server and get the reply that it sends within 3 seconds?
-
-```cs
-var replyMsg = client.WriteLineAndGetReply("Hello world!", TimeSpan.FromSeconds(3));
+var client = new SimpleTcpClient(Assembly.LoadFrom("PATH TO ASSEMBLY WITH PACKETS")).Connect("127.0.0.1", 8910);
 ```
 
 Want to receive a message event on the server each time you see a newline \n (char 13), and echo back any messages that come in?
@@ -36,13 +30,6 @@ Want to know how many clients are connected to the server?
 int clientsConnected = server.ConnectedClientsCount;
 ```
 
-Want to change the text encoding that the client and server uses when sending and receiving strings? (The default is ASCII/UTF8.)
-
-```cs
-server.StringEncoder = System.Text.ASCIIEncoding.ASCII;
-client.StringEncoder = System.Text.ASCIIEncoding.ASCII;
-```
-
 Want to get the IP addresses that the server is listening on?
 
 ```cs
@@ -54,14 +41,3 @@ Want to get only the IPv4 addresses the server is listening on?
 ```cs
 var listeningV4Ips = server.GetListeningIPs().Where(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
 ```
-
-Want to make your node.js friends stop saying things like "with node I can spin up a web server in only 4 lines of code"?
-
-```cs
-var server = new SimpleTcpServer().Start(80);
-server.DataReceived += (sender, msg) => {
-                msg.Reply("Content-Type: text/plain\n\nHello from my web server!"); 
-                };
-```
-
-(But really, this library isn't ideal for web server-ing, so don't do that in prod.)
