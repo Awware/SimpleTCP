@@ -1,4 +1,5 @@
 ﻿using SimpleTCPPlus.Client;
+using SimpleTCPPlus.Common.JSON;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +13,11 @@ namespace ReallyClient
     {
         static void Main(string[] args)
         {
-            SimpleTcpClient client = new SimpleTcpClient();
-            client.Delimiter = 0x61;
-            client.DelimiterDataReceived += (s, msg) =>
+            SimpleTcpClient client = new SimpleTcpClient(System.Reflection.Assembly.GetExecutingAssembly());
+            client.DataReceived += (s, pack) =>
             {
-                Console.WriteLine(msg.MessageString);
+                Console.WriteLine($"PACKET:\n{pack.Packet.PacketType}");
+                client.PacketHandler(pack);
             };
             while (!client.TcpClient.Connected)
             {
@@ -27,7 +28,7 @@ namespace ReallyClient
                 catch { Console.WriteLine("Reconnecting..."); }
             }
             Console.WriteLine("Connected!");
-            var replyMsg = client.WriteLineAndGetReply("Hello!", TimeSpan.FromSeconds(3));
+            client.WritePacket(new SimpleTCPPlus.Common.Packet("JSON", "INIT"));
             new Thread(() => { while (true) { } }).Start();
         }
     }

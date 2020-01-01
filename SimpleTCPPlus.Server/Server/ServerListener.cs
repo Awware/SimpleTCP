@@ -11,22 +11,19 @@ namespace SimpleTCPPlus.Server
 {
     internal class ServerListener
     {
-        private List<TcpClient> _connectedClients = new List<TcpClient>();
-        private List<TcpClient> _disconnectedClients = new List<TcpClient>();
+        public List<TcpClient> ConnectedClients;
+        public List<TcpClient> DisconnectedClients;
         private SimpleTcpServer _parent = null;
         private Dictionary<string, List<byte>> _clientBuffers = new Dictionary<string, List<byte>>();
-        private byte _delimiter = 0x13;
-        private Thread _rxThread = null;
+        private byte Delimiter { get; set; }
 
-        public int ConnectedClientsCount
-        {
-            get { return _connectedClients.Count; }
-        }
-
-        public IEnumerable<TcpClient> ConnectedClients { get { return _connectedClients; } }
+        public int ConnectedClientsCount => ConnectedClients.Count;
 
         internal ServerListener(SimpleTcpServer parentServer, IPAddress ipAddress, int port)
         {
+            ConnectedClients = new List<TcpClient>();
+            DisconnectedClients = new List<TcpClient>();
+
             QueueStop = false;
             _parent = parentServer;
             IPAddress = ipAddress;
@@ -80,14 +77,14 @@ namespace SimpleTCPPlus.Server
 
         private void RunLoopStep()
         {
-            if (_disconnectedClients.Count > 0)
+            if (DisconnectedClients.Count > 0)
             {
-                var disconnectedClients = _disconnectedClients.ToArray();
-                _disconnectedClients.Clear();
+                var disconnectedClients = DisconnectedClients.ToArray();
+                DisconnectedClients.Clear();
 
                 foreach (var disC in disconnectedClients)
                 {
-                    _connectedClients.Remove(disC);
+                    ConnectedClients.Remove(disC);
                     _parent.NotifyClientDisconnected(this, disC);
                 }
             }
@@ -95,17 +92,17 @@ namespace SimpleTCPPlus.Server
             if (Listener.Pending())
             {
 				var newClient = Listener.AcceptTcpClient();
-				_connectedClients.Add(newClient);
+                ConnectedClients.Add(newClient);
                 _parent.NotifyClientConnected(this, newClient);
             }
             
-            _delimiter = _parent.Delimiter;
+            Delimiter = _parent.Delimiter;
 
-            foreach (var c in _connectedClients)
+            foreach (var c in ConnectedClients)
             {
 		
 		        if ( IsSocketConnected(c.Client) == false)
-                    _disconnectedClients.Add(c);
+                    DisconnectedClients.Add(c);
 		    
                 if (c.Available == 0)
                     continue;
@@ -123,19 +120,21 @@ namespace SimpleTCPPlus.Server
                         _clientBuffers.Add(clientKey, new List<byte>());
 
                     List<byte> clientBuffer = _clientBuffers[clientKey];
-
-                    if (nextByte[0] == _delimiter)
+                    if (nextByte[0] == Delimiter)
                     {
                         byte[] msg = clientBuffer.ToArray();
                         clientBuffer.Clear();
-                        _parent.NotifyDelimiterMessageRx(this, c, msg);
-                    } 
+                        _parent.NotifyDelimiterMessageRx(msg, c);
+                    }
                     else
                         clientBuffer.AddRange(nextByte);
                 }
 
                 if (bytesReceived.Count > 0)
-                    _parent.NotifyEndTransmissionRx(this, c, bytesReceived.ToArray());
+                {
+                    _parent.NotifyEndTransmissionRx(bytesReceived.ToArray(), c);
+                    bytesReceived.Clear();
+                }
             }
         }
     }

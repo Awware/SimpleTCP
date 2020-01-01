@@ -42,7 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Server\ConnectedClient.cs" />
+    <Compile Include="IServerPacket.cs" />
     <Compile Include="Server\ServerListener.cs" />
     <Compile Include="Server\TcpListenerEx.cs" />
     <Compile Include="SimpleTcpServer.cs" />
