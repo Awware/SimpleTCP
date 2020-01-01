@@ -18,9 +18,10 @@ var client = new SimpleTcpClient(Assembly.LoadFrom("PATH TO ASSEMBLY WITH PACKET
 <b>Want to receive a message event on the server each time you see a newline \n (char 13), and echo back any messages that come in?</b>
 
 ```cs
-server.DelimiterDataReceived += (sender, packet) => {
-                msg.ReplyLine("You said: " + msg.MessageString);
-            };
+server.DelimiterDataReceived += (sender, packet) => 
+{
+    msg.ReplyLine("You said: " + msg.MessageString);
+};
 ```
 
 <b>Server</b>
@@ -29,7 +30,7 @@ server.DataReceived += (s, packet) =>
 {
       Console.WriteLine($"PACKET:\n{packet.Packet.PacketType}");
       server.PacketHandler(packet); //To work with custom packages that you add.
-}
+};
 ```
 
 <b>Client</b>
@@ -38,7 +39,7 @@ client.DataReceived += (s, packet) =>
 {
       Console.WriteLine($"PACKET:\n{packet.Packet.PacketType}");
       client.PacketHandler(packet); //To work with custom packages that you add.
-}
+};
 ```
 
 <b>Want to know how many clients are connected to the server?</b>
