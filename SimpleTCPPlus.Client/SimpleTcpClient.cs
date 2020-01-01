@@ -14,7 +14,6 @@ namespace SimpleTCPPlus.Client
 	{
 		public SimpleTcpClient(System.Reflection.Assembly packets)
 		{
-			StringEncoder = System.Text.Encoding.UTF8;
 			ReadLoopIntervalMs = 10;
 			TcpClient = new TcpClient();
 			PacketLoader = new GlobalPacketLoader(packets);
@@ -25,7 +24,6 @@ namespace SimpleTCPPlus.Client
 
 		private List<byte> _queuedMsg = new List<byte>();
 		public byte Delimiter { get; } = 0x13;
-		public Encoding StringEncoder { get; set; }
 
 		public event EventHandler<PacketWrapper> DelimiterDataReceived;
 		public event EventHandler<PacketWrapper> DataReceived;
@@ -137,21 +135,6 @@ namespace SimpleTCPPlus.Client
 			if (TcpClient == null) { throw new Exception("Cannot send data to a null TcpClient (check to see if Connect was called)"); }
 			TcpClient.GetStream().Write(data, 0, data.Length);
 		}
-
-		//public void Write(string data)
-		//{
-		//	if (data == null) { return; }
-		//	Write(StringEncoder.GetBytes(data));
-		//}
-
-		//public void WriteLine(string data)
-		//{
-		//	if (string.IsNullOrEmpty(data)) { return; }
-		//	if (data.LastOrDefault() != Delimiter)
-		//		Write(data + StringEncoder.GetString(new byte[] { Delimiter }));
-		//	else
-		//		Write(data);
-		//}
 
 		//public Message WriteLineAndGetReply(string data, TimeSpan timeout)
 		//{

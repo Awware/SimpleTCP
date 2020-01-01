@@ -43,7 +43,6 @@
   <ItemGroup>
     <Compile Include="GlobalPacketLoader.cs" />
     <Compile Include="Packet.cs" />
-    <Compile Include="Message.cs" />
     <Compile Include="PacketUtils.cs" />
     <Compile Include="PacketWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
