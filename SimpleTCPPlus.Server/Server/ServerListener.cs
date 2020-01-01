@@ -125,13 +125,16 @@ namespace SimpleTCPPlus.Server
                         byte[] msg = clientBuffer.ToArray();
                         clientBuffer.Clear();
                         _parent.NotifyDelimiterMessageRx(msg, c);
-                    } 
+                    }
                     else
                         clientBuffer.AddRange(nextByte);
                 }
 
                 if (bytesReceived.Count > 0)
+                {
                     _parent.NotifyEndTransmissionRx(bytesReceived.ToArray(), c);
+                    bytesReceived.Clear();
+                }
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using SimpleTCPPlus.Client;
+using SimpleTCPPlus.Common.JSON;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +28,7 @@ namespace ReallyClient
                 catch { Console.WriteLine("Reconnecting..."); }
             }
             Console.WriteLine("Connected!");
-            client.WritePacket(new SimpleTCPPlus.Common.Packet("JSON", "INIT", "NULL"));
+            client.WritePacket(new SimpleTCPPlus.Common.Packet("JSON", "INIT"));
             new Thread(() => { while (true) { } }).Start();
         }
     }

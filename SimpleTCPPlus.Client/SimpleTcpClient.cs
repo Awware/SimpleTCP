@@ -114,7 +114,10 @@ namespace SimpleTCPPlus.Client
 			}
 
 			if (bytesReceived.Count > 0)
+			{
+				_queuedMsg.Clear();
 				NotifyEndTransmissionRx(TcpClient, bytesReceived.ToArray());
+			}
 		}
 
 		private void NotifyDelimiterMessageRx(TcpClient client, byte[] rawPacket)

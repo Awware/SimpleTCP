@@ -1,5 +1,7 @@
 ﻿using SimpleTCPPlus.Client;
 using SimpleTCPPlus.Common;
+using SimpleTCPPlus.Common.JSON;
+using SimpleTCPPlus.Common.Types;
 
 namespace ReallyClient
 {
@@ -10,6 +12,7 @@ namespace ReallyClient
         public void Execute(PacketWrapper pack, SimpleTcpClient server)
         {
             System.Console.WriteLine("Server answer received!");
+            System.Console.WriteLine($"Answer info : '{JsonUtils.DeserializeIt<AnswerType>(pack.Packet.RawJSON).SomeData}'");
         }
     }
 }
