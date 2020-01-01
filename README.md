@@ -29,7 +29,7 @@ server.DataReceived += (s, packet) =>
 {
       Console.WriteLine($"PACKET:\n{packet.Packet.PacketType}");
       server.PacketHandler(packet); //To work with custom packages that you add.
-}
+};
 ```
 
 <b>Client</b>
@@ -38,7 +38,7 @@ client.DataReceived += (s, packet) =>
 {
       Console.WriteLine($"PACKET:\n{packet.Packet.PacketType}");
       client.PacketHandler(packet); //To work with custom packages that you add.
-}
+};
 ```
 
 <b>Want to know how many clients are connected to the server?</b>
