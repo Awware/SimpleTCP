@@ -10,6 +10,10 @@ namespace ReallyServer
         {
             Console.WriteLine("Server started");
             var server = new SimpleTcpServer(System.Reflection.Assembly.GetExecutingAssembly()).Start(6124);
+            server.ClientConnected += (x, w) =>
+            {
+                Console.WriteLine($"Client connected [{w.Client.RemoteEndPoint.ToString()}]");
+            };
             server.DataReceived += (s, pack) =>
             {
                 Console.WriteLine($"PACKET:\n{pack.Packet.PacketType}");
