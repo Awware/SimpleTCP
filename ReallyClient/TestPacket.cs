@@ -12,7 +12,8 @@ namespace ReallyClient
         public void Execute(PacketWrapper pack, SimpleTcpClient server)
         {
             System.Console.WriteLine("Server answer received!");
-            System.Console.WriteLine($"Answer info : '{JsonUtils.DeserializeIt<AnswerType>(pack.Packet.RawJSON).SomeData}'");
+            AnswerType type = JsonUtils.DeserializeIt<AnswerType>(pack.Packet.RawData);
+            System.Console.WriteLine($"Answer info : '{type.SomeData} | {type.AnswerInt}'");
         }
     }
 }

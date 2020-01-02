@@ -160,15 +160,15 @@ namespace SimpleTCPPlus.Client
 
 		public void WritePacket(Packet pack)
 		{
-			Write(AddByteToBytes(PacketUtils.PacketToBytes(pack), Delimiter));
+			Write(PacketUtils.PacketToBytes(pack));
 		}
-		private byte[] AddByteToBytes(byte[] array, byte b)
-		{
-			byte[] newArray = new byte[array.Length + 1];
-			array.CopyTo(newArray, 1);
-			newArray[0] = b;
-			return newArray;
-		}
+		//private byte[] AddByteToBytes(byte[] array, byte b)
+		//{
+		//	byte[] newArray = new byte[array.Length + 1];
+		//	array.CopyTo(newArray, 1);
+		//	newArray[0] = b;
+		//	return newArray;
+		//}
 		private bool HasPacket(string packetType) => ClientPackets.Where(pack => pack.PacketType == packetType).Count() > 0;
 		private IClientPacket GetPacketByPacketType(string type) => ClientPackets.Where(pack => pack.PacketType == type).FirstOrDefault();
 		public void PacketHandler(PacketWrapper wrap)
