@@ -20,7 +20,8 @@ var client = new SimpleTcpClient(Assembly.LoadFrom("PATH TO ASSEMBLY WITH PACKET
 ```cs
 server.DelimiterDataReceived += (sender, packet) => 
 {
-    msg.ReplyLine("You said: " + msg.MessageString);
+    Console.WriteLine($"PACKET:\n{packet.Packet.PacketType}");
+    packet.ReplyPacket(new Packet("JSON", "SOME TYPE"));
 };
 ```
 
@@ -61,4 +62,5 @@ var listeningV4Ips = server.GetListeningIPs().Where(ip => ip.AddressFamily == Sy
 ```
 
 <b>Packets</b>
+
 An example of working with packages is in the directories ReallyServer/ReallyClient
