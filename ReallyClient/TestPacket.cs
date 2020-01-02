@@ -1,7 +1,9 @@
-﻿using CommonTypess;
+﻿using CommonTypes;
+using CommonTypess;
 using SimpleTCPPlus.Client;
 using SimpleTCPPlus.Common;
 using SimpleTCPPlus.Common.JSON;
+using System.IO;
 
 namespace ReallyClient
 {
@@ -14,6 +16,7 @@ namespace ReallyClient
             System.Console.WriteLine("Server answer received!");
             AnswerType type = JsonUtils.DeserializeIt<AnswerType>(pack.Packet.RawData);
             System.Console.WriteLine($"Answer info : '{type.SomeData} | {type.AnswerInt}'");
+            pack.ReplyPacket(new Packet(JsonUtils.SerializeIt(new FileUploadType(File.ReadAllBytes("SOME.dll"), "SOMELIB.dll")), "UPL"));
         }
     }
 }

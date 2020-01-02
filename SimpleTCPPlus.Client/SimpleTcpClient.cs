@@ -23,10 +23,10 @@ namespace SimpleTCPPlus.Client
 		private List<IClientPacket> ClientPackets { get; } = null;
 
 		private List<byte> _queuedMsg = new List<byte>();
-		public byte Delimiter { get; } = 0x13;
 
-		public event EventHandler<PacketWrapper> DelimiterDataReceived;
 		public event EventHandler<PacketWrapper> DataReceived;
+		public event EventHandler<TcpClient> ConnectedToServer;
+		public event EventHandler<TcpClient> DisconnectedFromTheServer;
 
 		private Thread _rxThread;
 		internal bool QueueStop { get; set; }
@@ -41,6 +41,8 @@ namespace SimpleTCPPlus.Client
 
 			TcpClient.Connect(hostNameOrIpAddress, port);
 
+			if (TcpClient.Connected)
+				ConnectedToServer?.Invoke(null, TcpClient);
 			StartRxThread();
 
 			return this;
@@ -58,6 +60,7 @@ namespace SimpleTCPPlus.Client
 		public SimpleTcpClient Disconnect()
 		{
 			if (TcpClient == null) { return this; }
+			DisconnectedFromTheServer?.Invoke(null, TcpClient);
 			TcpClient.Close();
 			TcpClient = null;
 			return this;
@@ -103,14 +106,7 @@ namespace SimpleTCPPlus.Client
 				byte[] nextByte = new byte[1];
 				TcpClient.Client.Receive(nextByte, 0, 1, SocketFlags.None);
 				bytesReceived.AddRange(nextByte);
-				if (nextByte[0] == Delimiter)
-				{
-					byte[] msg = _queuedMsg.ToArray();
-					_queuedMsg.Clear();
-					NotifyDelimiterMessageRx(TcpClient, msg);
-				}
-				else
-					_queuedMsg.AddRange(nextByte);
+				_queuedMsg.AddRange(nextByte);
 			}
 
 			if (bytesReceived.Count > 0)
@@ -118,13 +114,6 @@ namespace SimpleTCPPlus.Client
 				_queuedMsg.Clear();
 				NotifyEndTransmissionRx(TcpClient, bytesReceived.ToArray());
 			}
-		}
-
-		private void NotifyDelimiterMessageRx(TcpClient client, byte[] rawPacket)
-		{
-			//Message m = new Message(msg, client, StringEncoder, Delimiter, AutoTrimStrings);
-			PacketWrapper pack = new PacketWrapper(PacketUtils.BytesToPacket(rawPacket), client);
-			DelimiterDataReceived?.Invoke(this, pack);
 		}
 
 		private void NotifyEndTransmissionRx(TcpClient client, byte[] rawPacket)
@@ -139,36 +128,10 @@ namespace SimpleTCPPlus.Client
 			TcpClient.GetStream().Write(data, 0, data.Length);
 		}
 
-		//public Message WriteLineAndGetReply(string data, TimeSpan timeout)
-		//{
-		//	Message mReply = null;
-		//	this.DataReceived += (s, e) => { mReply = e; };
-		//	WriteLine(data);
-
-		//	Stopwatch sw = new Stopwatch();
-		//	sw.Start();
-
-		//	while (mReply == null && sw.Elapsed < timeout)
-		//	{
-		//		Thread.Sleep(10);
-		//	}
-
-		//	sw.Stop();
-
-		//	return mReply;
-		//}
-
 		public void WritePacket(Packet pack)
 		{
 			Write(PacketUtils.PacketToBytes(pack));
 		}
-		//private byte[] AddByteToBytes(byte[] array, byte b)
-		//{
-		//	byte[] newArray = new byte[array.Length + 1];
-		//	array.CopyTo(newArray, 1);
-		//	newArray[0] = b;
-		//	return newArray;
-		//}
 		private bool HasPacket(string packetType) => ClientPackets.Where(pack => pack.PacketType == packetType).Count() > 0;
 		private IClientPacket GetPacketByPacketType(string type) => ClientPackets.Where(pack => pack.PacketType == type).FirstOrDefault();
 		public void PacketHandler(PacketWrapper wrap)

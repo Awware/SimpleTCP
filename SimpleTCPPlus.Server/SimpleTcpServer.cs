@@ -24,11 +24,9 @@ namespace SimpleTCPPlus.Server
         private GlobalPacketLoader Loader { get; } = null;
         private List<IServerPacket> ServerPackets { get; } = null;
         private List<ServerListener> _listeners = new List<ServerListener>();
-        public byte Delimiter { get; } = 0x13;
 
         public event EventHandler<TcpClient> ClientConnected;
         public event EventHandler<TcpClient> ClientDisconnected;
-        public event EventHandler<PacketWrapper> DelimiterDataReceived;
         public event EventHandler<PacketWrapper> DataReceived;
 
         public IEnumerable<IPAddress> GetIPAddresses()
@@ -205,13 +203,6 @@ namespace SimpleTCPPlus.Server
             {
                 return _listeners.Sum(l => l.ConnectedClientsCount);
             }
-        }
-
-        internal void NotifyDelimiterMessageRx(byte[] rawPacket, TcpClient client)
-        {
-            //Message m = new Message(msg, client, StringEncoder, Delimiter, AutoTrimStrings);
-            PacketWrapper pack = new PacketWrapper(PacketUtils.BytesToPacket(rawPacket), client);
-            DelimiterDataReceived?.Invoke(this, pack);
         }
 
         internal void NotifyEndTransmissionRx(byte[] rawPacket, TcpClient client)

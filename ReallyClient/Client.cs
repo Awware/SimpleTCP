@@ -14,6 +14,10 @@ namespace ReallyClient
                 Console.WriteLine($"PACKET:\n{pack.Packet.PacketType}");
                 client.PacketHandler(pack);
             };
+            client.ConnectedToServer += (x, clientx) =>
+            {
+                Console.WriteLine("Connected to the server!");
+            };
             while (!client.TcpClient.Connected)
             {
                 try
@@ -22,7 +26,6 @@ namespace ReallyClient
                 }
                 catch { Console.WriteLine("Reconnecting..."); }
             }
-            Console.WriteLine("Connected!");
             client.WritePacket(new SimpleTCPPlus.Common.Packet("JSON", "INIT"));
             new Thread(() => { while (true) { } }).Start();
         }
