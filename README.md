@@ -64,3 +64,15 @@ var listeningV4Ips = server.GetListeningIPs().Where(ip => ip.AddressFamily == Sy
 <b>Packets</b>
 
 An example of working with packages is in the directories ReallyServer/ReallyClient
+
+<b>Working with JSON</b>
+
+Deserialize
+```cs
+TYPE type = JsonUtils.DeserializeIt<TYPE>(pack.Packet.RawData);
+```
+
+Serialize
+```cs
+JsonUtils.SerializeIt(new TYPE(...));
+```
