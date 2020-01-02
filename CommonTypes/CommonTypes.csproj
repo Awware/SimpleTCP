@@ -4,17 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B1C90043-AAB2-4A3B-A3BD-BA81ABF1DB75}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>ReallyClient</RootNamespace>
-    <AssemblyName>ReallyClient</AssemblyName>
+    <ProjectGuid>{118CD580-27A4-42C0-B67F-B36055313369}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CommonTypes</RootNamespace>
+    <AssemblyName>CommonTypes</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,7 +23,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -33,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -43,26 +44,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client.cs" />
+    <Compile Include="AnswerType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestPacket.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CommonTypes\CommonTypes.csproj">
-      <Project>{118CD580-27A4-42C0-B67F-B36055313369}</Project>
-      <Name>CommonTypes</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SimpleTCPPlus.Client\SimpleTCPPlus.Client.csproj">
-      <Project>{C9C99F87-E188-49D2-A323-09FE79F39F8D}</Project>
-      <Name>SimpleTCPPlus.Client</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SimpleTCPPlus.Common\SimpleTCPPlus.Common.csproj">
-      <Project>{883E0C14-F82B-4300-992D-F6205E4B933E}</Project>
-      <Name>SimpleTCPPlus.Common</Name>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

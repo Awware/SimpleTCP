@@ -1,7 +1,7 @@
-﻿using SimpleTCPPlus.Client;
+﻿using CommonTypess;
+using SimpleTCPPlus.Client;
 using SimpleTCPPlus.Common;
 using SimpleTCPPlus.Common.JSON;
-using SimpleTCPPlus.Common.Types;
 
 namespace ReallyClient
 {

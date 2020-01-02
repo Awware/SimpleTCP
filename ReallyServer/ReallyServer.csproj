@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\compiled\Client Server\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -51,6 +51,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CommonTypes\CommonTypes.csproj">
+      <Project>{118CD580-27A4-42C0-B67F-B36055313369}</Project>
+      <Name>CommonTypes</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SimpleTCPPlus.Common\SimpleTCPPlus.Common.csproj">
       <Project>{883E0C14-F82B-4300-992D-F6205E4B933E}</Project>
       <Name>SimpleTCPPlus.Common</Name>

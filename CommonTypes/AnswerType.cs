@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace SimpleTCPPlus.Common.Types
+namespace CommonTypess
 {
     [Serializable]
     public class AnswerType

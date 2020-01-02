@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTCPPlus.Server", "Sim
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTCPPlus.Common", "SimpleTCPPlus.Common\SimpleTCPPlus.Common.csproj", "{883E0C14-F82B-4300-992D-F6205E4B933E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonTypes", "CommonTypes\CommonTypes.csproj", "{118CD580-27A4-42C0-B67F-B36055313369}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{883E0C14-F82B-4300-992D-F6205E4B933E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{883E0C14-F82B-4300-992D-F6205E4B933E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{883E0C14-F82B-4300-992D-F6205E4B933E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{118CD580-27A4-42C0-B67F-B36055313369}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{118CD580-27A4-42C0-B67F-B36055313369}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{118CD580-27A4-42C0-B67F-B36055313369}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{118CD580-27A4-42C0-B67F-B36055313369}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

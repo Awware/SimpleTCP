@@ -1,6 +1,6 @@
-﻿using SimpleTCPPlus.Common;
+﻿using CommonTypess;
+using SimpleTCPPlus.Common;
 using SimpleTCPPlus.Common.JSON;
-using SimpleTCPPlus.Common.Types;
 using SimpleTCPPlus.Server;
 using System;
 
