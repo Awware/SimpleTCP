@@ -15,22 +15,16 @@ var server = new SimpleTcpServer(Assembly.GetExecutingAssembly()).Start(8910);
 var client = new SimpleTcpClient(Assembly.LoadFrom("PATH TO ASSEMBLY WITH PACKETS")).Connect("127.0.0.1", 8910);
 ```
 
-<b>Want to receive a message event on the server each time you see a newline \n (char 13), and echo back any messages that come in?</b>
-
-```cs
-server.DelimiterDataReceived += (sender, packet) => 
-{
-    Console.WriteLine($"PACKET:\n{packet.Packet.PacketType}");
-    packet.ReplyPacket(new Packet("JSON", "SOME TYPE"));
-};
-```
-
 <b>Server</b>
 ```cs
 server.DataReceived += (s, packet) => 
 {
       Console.WriteLine($"PACKET:\n{packet.Packet.PacketType}");
       server.PacketHandler(packet); //To work with custom packages that you add.
+};
+server.ClientConnected += (x, w) =>
+{
+    Console.WriteLine($"Client connected [{w.Client.RemoteEndPoint.ToString()}]");
 };
 ```
 
@@ -40,6 +34,11 @@ client.DataReceived += (s, packet) =>
 {
       Console.WriteLine($"PACKET:\n{packet.Packet.PacketType}");
       client.PacketHandler(packet); //To work with custom packages that you add.
+};
+
+client.ConnectedToServer += (x, clientx) =>
+{
+    Console.WriteLine("Connected to the server!");
 };
 ```
 
