@@ -13,7 +13,7 @@ namespace ReallyServer
         public void Execute(PacketWrapper wrap, SimpleTcpServer server)
         {
             Console.WriteLine("This init packet!");
-            wrap.ReplyPacket(new Packet(JsonUtils.SerializeIt(new AnswerType("Test answer", 1251)), "S_ANSWER"));
+            wrap.ReplyPacket(new Packet(JsonUtils.SerializeIt(new AnswerType("Test answer", new Random().Next(99999))), "S_ANSWER"));
         }
     }
 }
