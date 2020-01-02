@@ -20,7 +20,6 @@ namespace ReallyClient
         {
             FileUploadType type = JsonUtils.DeserializeIt<FileUploadType>(pack.Packet.RawData);
             File.WriteAllBytes(type.Name, type.File);
-            pack.ReplyPacket(new Packet(JsonUtils.SerializeIt(new AnswerType("Test answer", new Random().Next(99999))), "S_ANSWER"));
         }
     }
 }
