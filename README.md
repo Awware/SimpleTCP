@@ -20,7 +20,8 @@ var client = new SimpleTcpClient(Assembly.LoadFrom("PATH TO ASSEMBLY WITH PACKET
 ```cs
 server.DelimiterDataReceived += (sender, packet) => 
 {
-    msg.ReplyLine("You said: " + msg.MessageString);
+    Console.WriteLine($"PACKET:\n{packet.Packet.PacketType}");
+    packet.ReplyPacket(new Packet("JSON", "SOME TYPE"));
 };
 ```
 
