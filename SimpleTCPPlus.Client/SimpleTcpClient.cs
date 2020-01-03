@@ -22,11 +22,14 @@ namespace SimpleTCPPlus.Client
 		private GlobalPacketLoader PacketLoader { get; } = null;
 		private List<IClientPacket> ClientPackets { get; } = null;
 
-		private List<byte> _queuedMsg = new List<byte>();
+		//private List<byte> _queuedMsg = new List<byte>();
 
+		public event EventHandler<PacketWrapper> SpoofReceivedData;
 		public event EventHandler<PacketWrapper> DataReceived;
 		public event EventHandler<TcpClient> ConnectedToServer;
 		public event EventHandler<TcpClient> DisconnectedFromTheServer;
+
+		public string PacketInQue { get; set; } = "";
 
 		private Thread _rxThread;
 		internal bool QueueStop { get; set; }
@@ -95,7 +98,7 @@ namespace SimpleTCPPlus.Client
 			int bytesAvailable = TcpClient.Available;
 			if (bytesAvailable == 0)
 			{
-				Thread.Sleep(10);
+				//Thread.Sleep(10);
 				return;
 			}
 
@@ -106,20 +109,22 @@ namespace SimpleTCPPlus.Client
 				byte[] nextByte = new byte[1];
 				TcpClient.Client.Receive(nextByte, 0, 1, SocketFlags.None);
 				bytesReceived.AddRange(nextByte);
-				_queuedMsg.AddRange(nextByte);
 			}
 
 			if (bytesReceived.Count > 0)
 			{
-				_queuedMsg.Clear();
 				NotifyEndTransmissionRx(TcpClient, bytesReceived.ToArray());
+				bytesReceived.Clear();
 			}
 		}
 
 		private void NotifyEndTransmissionRx(TcpClient client, byte[] rawPacket)
 		{
 			PacketWrapper pack = new PacketWrapper(PacketUtils.BytesToPacket(rawPacket), client);
-			DataReceived?.Invoke(this, pack);
+			if (!string.IsNullOrEmpty(PacketInQue) && pack.Packet.PacketType == PacketInQue)
+				SpoofReceivedData?.Invoke(this, pack);
+			else
+				DataReceived?.Invoke(this, pack);
 		}
 
 		public void Write(byte[] data)
@@ -130,7 +135,25 @@ namespace SimpleTCPPlus.Client
 
 		public void WritePacket(Packet pack)
 		{
+			Thread.Sleep(75);
 			Write(PacketUtils.PacketToBytes(pack));
+		}
+		public PacketWrapper WritePacketAndReceive(Packet pack, string packettype)
+		{
+			PacketWrapper packet = null;
+			PacketInQue = packettype;
+			this.SpoofReceivedData += (s, e) => packet = e;
+			WritePacket(pack);
+
+			Stopwatch sw = new Stopwatch();
+			sw.Start();
+
+			while (packet == null) { }
+
+			PacketInQue = "";
+			sw.Stop();
+
+			return packet;
 		}
 		private bool HasPacket(string packetType) => ClientPackets.Where(pack => pack.PacketType == packetType).Count() > 0;
 		private IClientPacket GetPacketByPacketType(string type) => ClientPackets.Where(pack => pack.PacketType == type).FirstOrDefault();

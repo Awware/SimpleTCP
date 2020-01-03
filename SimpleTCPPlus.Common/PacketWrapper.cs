@@ -1,4 +1,5 @@
 ﻿using System.Net.Sockets;
+using System.Threading;
 
 namespace SimpleTCPPlus.Common
 {
@@ -9,6 +10,7 @@ namespace SimpleTCPPlus.Common
         public TcpClient Client { get; } = null;
         public void ReplyPacket(Packet pack)
         {
+            Thread.Sleep(50);
             Client.GetStream().Write(PacketUtils.PacketToBytes(pack), 0, PacketUtils.PacketToBytes(pack).Length);
         }
     }

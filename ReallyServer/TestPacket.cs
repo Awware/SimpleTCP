@@ -16,4 +16,14 @@ namespace ReallyServer
             wrap.ReplyPacket(new Packet(JsonUtils.SerializeIt(new AnswerType("Test answer", new Random().Next(99999))), "S_ANSWER"));
         }
     }
+    public class TestPacket2 : IServerPacket
+    {
+        public string PacketType => "sasok";
+
+        public void Execute(PacketWrapper wrap, SimpleTcpServer server)
+        {
+            Console.WriteLine("This test packet!");
+            wrap.ReplyPacket(new Packet("", "TEST_REPLY_PACKET"));
+        }
+    }
 }

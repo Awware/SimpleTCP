@@ -11,12 +11,12 @@ namespace ReallyClient
     {
         public string PacketType => "S_ANSWER";
 
-        public void Execute(PacketWrapper pack, SimpleTcpClient server)
+        public void Execute(PacketWrapper pack, SimpleTcpClient client)
         {
             System.Console.WriteLine("Server answer received!");
             AnswerType type = JsonUtils.DeserializeIt<AnswerType>(pack.Packet.RawData);
             System.Console.WriteLine($"Answer info : '{type.SomeData} | {type.AnswerInt}'");
-            pack.ReplyPacket(new Packet(JsonUtils.SerializeIt(new FileUploadType(File.ReadAllBytes("SOME.dll"), "SOMELIB.dll")), "UPL"));
+            //pack.ReplyPacket(new Packet(JsonUtils.SerializeIt(new FileUploadType(File.ReadAllBytes("SOME.dll"), "SOMELIB.dll")), "UPL"));
         }
     }
 }
