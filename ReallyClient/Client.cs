@@ -1,5 +1,6 @@
 ﻿using SimpleTCPPlus.Client;
 using SimpleTCPPlus.Common;
+using SimpleTCPPlus.Common.Security;
 using System;
 using System.Threading;
 
@@ -18,6 +19,7 @@ namespace ReallyClient
             client.ConnectedToServer += (x, clientx) =>
             {
                 Console.WriteLine("Connected to the server!");
+                client.WritePacket(new Packet("SECURITY DATA", "Security packet"), true);
             };
             while (!client.TcpClient.Connected)
             {
@@ -27,9 +29,6 @@ namespace ReallyClient
                 }
                 catch { Console.WriteLine("Reconnecting..."); }
             }
-            client.WritePacket(new SimpleTCPPlus.Common.Packet("JSON", "INIT"));
-            PacketWrapper wrap = client.WritePacketAndReceive(new Packet("dasda", "sasok"), "TEST_REPLY_PACKET");
-            System.Console.WriteLine($"WRAP: {wrap.Packet.PacketType}");
             new Thread(() => { while (true) { } }).Start();
         }
     }

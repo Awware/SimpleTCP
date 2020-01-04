@@ -1,4 +1,5 @@
 ﻿using SimpleTCPPlus.Common;
+using SimpleTCPPlus.Common.Security;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -120,11 +121,14 @@ namespace SimpleTCPPlus.Client
 
 		private void NotifyEndTransmissionRx(TcpClient client, byte[] rawPacket)
 		{
-			PacketWrapper pack = new PacketWrapper(PacketUtils.BytesToPacket(rawPacket), client);
-			if (!string.IsNullOrEmpty(PacketInQue) && pack.Packet.PacketType == PacketInQue)
-				SpoofReceivedData?.Invoke(this, pack);
+			Packet pack = PacketUtils.BytesToPacket(rawPacket);
+			if (!string.IsNullOrEmpty(pack.PacketSec))
+				pack = SecurityPackets.DecryptPacket(pack);
+			PacketWrapper wrap = new PacketWrapper(pack, client);
+			if (!string.IsNullOrEmpty(PacketInQue) && wrap.Packet.PacketType == PacketInQue)
+				SpoofReceivedData?.Invoke(this, wrap);
 			else
-				DataReceived?.Invoke(this, pack);
+				DataReceived?.Invoke(this, wrap);
 		}
 
 		public void Write(byte[] data)
@@ -133,17 +137,20 @@ namespace SimpleTCPPlus.Client
 			TcpClient.GetStream().Write(data, 0, data.Length);
 		}
 
-		public void WritePacket(Packet pack)
+		public void WritePacket(Packet pack, bool security = true)
 		{
 			Thread.Sleep(75);
-			Write(PacketUtils.PacketToBytes(pack));
+			if(security)
+				Write(PacketUtils.PacketToBytes(SecurityPackets.EncryptPacket(pack)));
+			else
+				Write(PacketUtils.PacketToBytes(pack));
 		}
-		public PacketWrapper WritePacketAndReceive(Packet pack, string packettype)
+		public PacketWrapper WritePacketAndReceive(Packet pack, string packettype, bool security = true)
 		{
 			PacketWrapper packet = null;
 			PacketInQue = packettype;
 			this.SpoofReceivedData += (s, e) => packet = e;
-			WritePacket(pack);
+			WritePacket(pack, security);
 
 			Stopwatch sw = new Stopwatch();
 			sw.Start();
