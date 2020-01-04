@@ -25,7 +25,7 @@ namespace ReallyClient
 
         public void Execute(PacketWrapper pack, SimpleTcpClient client)
         {
-            System.Console.WriteLine("Counter security packet />/");
+            System.Console.WriteLine("Counter security packet");
             System.Console.WriteLine($"Security data : {pack.Packet.PacketSec} | {pack.Packet.PacketType} | {Encoding.Default.GetString(pack.Packet.RawData)}");
         }
     }
