@@ -1,4 +1,6 @@
-﻿using System.Net.Sockets;
+﻿using SimpleTCPPlus.Common.Security;
+using System.Net.Sockets;
+using System.Threading;
 
 namespace SimpleTCPPlus.Common
 {
@@ -7,9 +9,19 @@ namespace SimpleTCPPlus.Common
         public PacketWrapper(Packet pack, TcpClient client) { Packet = pack; Client = client; }
         public Packet Packet { get; } = null; 
         public TcpClient Client { get; } = null;
-        public void ReplyPacket(Packet pack)
+        public void ReplyPacket(Packet pack, bool security)
         {
-            Client.GetStream().Write(PacketUtils.PacketToBytes(pack), 0, PacketUtils.PacketToBytes(pack).Length);
+            Thread.Sleep(50);
+            if (!security)
+            {
+                byte[] PacketBytes = PacketUtils.PacketToBytes(pack);
+                Client.GetStream().Write(PacketBytes, 0, PacketBytes.Length);
+            }
+            else
+            {
+                byte[] PacketBytes = PacketUtils.PacketToBytes(SecurityPackets.EncryptPacket(pack));
+                Client.GetStream().Write(PacketBytes, 0, PacketBytes.Length);
+            }
         }
     }
 }

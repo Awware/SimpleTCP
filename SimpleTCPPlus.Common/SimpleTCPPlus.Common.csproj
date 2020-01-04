@@ -50,6 +50,7 @@
     <Compile Include="PacketUtils.cs" />
     <Compile Include="PacketWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Security\SecurityPackets.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

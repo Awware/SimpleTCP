@@ -1,4 +1,5 @@
 ﻿using SimpleTCPPlus.Common;
+using SimpleTCPPlus.Common.Security;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -73,10 +74,13 @@ namespace SimpleTCPPlus.Server
             }
         }
 
-        public void Broadcast(Packet packet)
+        public void Broadcast(Packet packet, bool security = true)
         {
             if (packet == null) { return; }
-            Broadcast(PacketUtils.PacketToBytes(packet));
+            if(security)
+                Broadcast(PacketUtils.PacketToBytes(SecurityPackets.EncryptPacket(packet)));
+            else
+                Broadcast(PacketUtils.PacketToBytes(packet));
         }
 
         private int RankIpAddress(IPAddress addr)
@@ -207,8 +211,11 @@ namespace SimpleTCPPlus.Server
 
         internal void NotifyEndTransmissionRx(byte[] rawPacket, TcpClient client)
         {
-            PacketWrapper pack = new PacketWrapper(PacketUtils.BytesToPacket(rawPacket), client);
-            DataReceived?.Invoke(this, pack);
+            Packet pack = PacketUtils.BytesToPacket(rawPacket);
+            //PacketWrapper pack = new PacketWrapper(PacketUtils.BytesToPacket(rawPacket), client);
+            if (!string.IsNullOrEmpty(pack.PacketSec))
+                pack = SecurityPackets.DecryptPacket(pack);
+            DataReceived?.Invoke(this, new PacketWrapper(pack, client));
         }
 
         internal void NotifyClientConnected(ServerListener listener, TcpClient newClient)

@@ -14,8 +14,6 @@ namespace SimpleTCPPlus.Server
         public List<TcpClient> ConnectedClients;
         public List<TcpClient> DisconnectedClients;
         private SimpleTcpServer _parent = null;
-        private Dictionary<string, List<byte>> _clientBuffers = new Dictionary<string, List<byte>>();
-        //private byte Delimiter { get; set; }
 
         public int ConnectedClientsCount => ConnectedClients.Count;
 
@@ -51,7 +49,25 @@ namespace SimpleTCPPlus.Server
             {
                 try
                 {
-                    RunLoopStep();
+                    if (DisconnectedClients.Count > 0)
+                    {
+                        var disconnectedClients = DisconnectedClients.ToArray();
+                        DisconnectedClients.Clear();
+
+                        foreach (var disC in disconnectedClients)
+                        {
+                            ConnectedClients.Remove(disC);
+                            _parent.NotifyClientDisconnected(this, disC);
+                        }
+                    }
+
+                    if (Listener.Pending())
+                    {
+                        var newClient = Listener.AcceptTcpClient();
+                        ConnectedClients.Add(newClient);
+                        new Thread(() => { while (!QueueStop) { RunLoopStep(newClient); } }).Start();
+                        _parent.NotifyClientConnected(this, newClient);
+                    }
                 }
                 catch 
                 {
@@ -75,62 +91,27 @@ namespace SimpleTCPPlus.Server
 		        return true;
 	    }
 
-        private void RunLoopStep()
+        private void RunLoopStep(TcpClient c)
         {
-            if (DisconnectedClients.Count > 0)
-            {
-                var disconnectedClients = DisconnectedClients.ToArray();
-                DisconnectedClients.Clear();
-
-                foreach (var disC in disconnectedClients)
-                {
-                    ConnectedClients.Remove(disC);
-                    _parent.NotifyClientDisconnected(this, disC);
-                }
-            }
-
-            if (Listener.Pending())
-            {
-				var newClient = Listener.AcceptTcpClient();
-                ConnectedClients.Add(newClient);
-                _parent.NotifyClientConnected(this, newClient);
-            }
-            
-            //Delimiter = _parent.Delimiter;
-
-            foreach (var c in ConnectedClients)
-            {
-		
-		        if ( IsSocketConnected(c.Client) == false)
-                    DisconnectedClients.Add(c);
+		    if ( IsSocketConnected(c.Client) == false)
+                DisconnectedClients.Add(c);
 		    
-                if (c.Available == 0)
-                    continue;
+            if (c.Available == 0)
+                return;
 
-                List<byte> bytesReceived = new List<byte>();
+            List<byte> bytesReceived = new List<byte>();
 
-                while (c.Available > 0 && c.Connected)
-                {
-                    byte[] nextByte = new byte[1];
-                    c.Client.Receive(nextByte, 0, 1, SocketFlags.None);
-                    bytesReceived.AddRange(nextByte);
+            while (c.Available > 0 && c.Connected)
+            {
+                byte[] nextByte = new byte[1];
+                c.Client.Receive(nextByte, 0, 1, SocketFlags.None);
+                bytesReceived.AddRange(nextByte);
+            }
 
-                    string clientKey = c.Client.RemoteEndPoint.ToString();
-                    if (!_clientBuffers.ContainsKey(clientKey))
-                        _clientBuffers.Add(clientKey, new List<byte>());
-
-                    //List<byte> clientBuffer = _clientBuffers[clientKey];
-                        //byte[] msg = clientBuffer.ToArray();
-                        //clientBuffer.Clear();
-                        //_parent.NotifyDelimiterMessageRx(msg, c);
-                    //clientBuffer.AddRange(nextByte);
-                }
-
-                if (bytesReceived.Count > 0)
-                {
-                    _parent.NotifyEndTransmissionRx(bytesReceived.ToArray(), c);
-                    bytesReceived.Clear();
-                }
+            if (bytesReceived.Count > 0)
+            {
+                _parent.NotifyEndTransmissionRx(bytesReceived.ToArray(), c);
+                bytesReceived.Clear();
             }
         }
     }
