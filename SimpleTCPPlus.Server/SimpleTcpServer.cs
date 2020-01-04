@@ -74,7 +74,7 @@ namespace SimpleTCPPlus.Server
             }
         }
 
-        public void Broadcast(Packet packet, bool security)
+        public void Broadcast(Packet packet, bool security = true)
         {
             if (packet == null) { return; }
             if(security)
