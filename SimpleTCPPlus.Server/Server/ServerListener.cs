@@ -49,25 +49,7 @@ namespace SimpleTCPPlus.Server
             {
                 try
                 {
-                    if (DisconnectedClients.Count > 0)
-                    {
-                        var disconnectedClients = DisconnectedClients.ToArray();
-                        DisconnectedClients.Clear();
-
-                        foreach (var disC in disconnectedClients)
-                        {
-                            ConnectedClients.Remove(disC);
-                            _parent.NotifyClientDisconnected(this, disC);
-                        }
-                    }
-
-                    if (Listener.Pending())
-                    {
-                        var newClient = Listener.AcceptTcpClient();
-                        ConnectedClients.Add(newClient);
-                        new Thread(() => { while (!QueueStop) { RunLoopStep(newClient); } }).Start();
-                        _parent.NotifyClientConnected(this, newClient);
-                    }
+                    RunLoopStep();
                 }
                 catch 
                 {
@@ -82,36 +64,52 @@ namespace SimpleTCPPlus.Server
 	    
 	    private bool IsSocketConnected(Socket s)
 	    {
-	        // https://stackoverflow.com/questions/2661764/how-to-check-if-a-socket-is-connected-disconnected-in-c
-	        bool part1 = s.Poll(1000, SelectMode.SelectRead);
-	        bool part2 = (s.Available == 0);
-	        if ((part1 && part2) || !s.Connected)
-		        return false;
-	        else
-		        return true;
-	    }
+            return !((s.Poll(1000, SelectMode.SelectRead) && (s.Available == 0)) || !s.Connected);
+        }
 
-        private void RunLoopStep(TcpClient c)
+        private void RunLoopStep()
         {
-		    if ( IsSocketConnected(c.Client) == false)
-                DisconnectedClients.Add(c);
-		    
-            if (c.Available == 0)
-                return;
-
-            List<byte> bytesReceived = new List<byte>();
-
-            while (c.Available > 0 && c.Connected)
+            if (DisconnectedClients.Count > 0)
             {
-                byte[] nextByte = new byte[1];
-                c.Client.Receive(nextByte, 0, 1, SocketFlags.None);
-                bytesReceived.AddRange(nextByte);
+                var disconnectedClients = DisconnectedClients.ToArray();
+                DisconnectedClients.Clear();
+
+                foreach (var disC in disconnectedClients)
+                {
+                    ConnectedClients.Remove(disC);
+                    _parent.NotifyClientDisconnected(this, disC);
+                }
             }
 
-            if (bytesReceived.Count > 0)
+            if (Listener.Pending())
             {
-                _parent.NotifyEndTransmissionRx(bytesReceived.ToArray(), c);
-                bytesReceived.Clear();
+                var newClient = Listener.AcceptTcpClient();
+                ConnectedClients.Add(newClient);
+                _parent.NotifyClientConnected(this, newClient);
+            }
+
+            foreach (TcpClient tc in ConnectedClients) {
+
+                if (!IsSocketConnected(tc.Client))
+                    DisconnectedClients.Add(tc);
+
+                if (tc.Available == 0)
+                    return;
+
+                List<byte> bytesReceived = new List<byte>();
+
+                while (tc.Available > 0 && tc.Connected)
+                {
+                    byte[] nextByte = new byte[1];
+                    tc.Client.Receive(nextByte, 0, 1, SocketFlags.None);
+                    bytesReceived.AddRange(nextByte);
+                }
+
+                if (bytesReceived.Count > 0)
+                {
+                    _parent.NotifyEndTransmissionRx(bytesReceived.ToArray(), tc);
+                    bytesReceived.Clear();
+                }
             }
         }
     }
