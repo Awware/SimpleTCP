@@ -14,6 +14,10 @@ namespace ReallyServer
             {
                 Console.WriteLine($"Client connected [{w.Client.RemoteEndPoint.ToString()}]");
             };
+            server.ClientDisconnected += (x, w) =>
+            {
+                Console.WriteLine($"Client disconnected [{w.Client.RemoteEndPoint.ToString()}]");
+            };
             server.DataReceived += (s, pack) =>
             {
                 Console.WriteLine($"PACKET:\n{pack.Packet.PacketType}");
