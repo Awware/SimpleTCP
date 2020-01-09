@@ -23,8 +23,6 @@ namespace SimpleTCPPlus.Client
 		private GlobalPacketLoader PacketLoader { get; } = null;
 		private List<IClientPacket> ClientPackets { get; } = null;
 
-		//private List<byte> _queuedMsg = new List<byte>();
-
 		public event EventHandler<PacketWrapper> SpoofReceivedData;
 		public event EventHandler<PacketWrapper> DataReceived;
 		public event EventHandler<TcpClient> ConnectedToServer;
@@ -32,9 +30,9 @@ namespace SimpleTCPPlus.Client
 
 		public string PacketInQue { get; set; } = "";
 
-		private Thread _rxThread;
-		internal bool QueueStop { get; set; }
 		internal int ReadLoopIntervalMs { get; set; }
+
+		public TcpClient TcpClient { get; set; } = null;
 
 		public SimpleTcpClient Connect(string hostNameOrIpAddress, int port)
 		{
@@ -43,80 +41,42 @@ namespace SimpleTCPPlus.Client
 				throw new ArgumentNullException("hostNameOrIpAddress");
 			}
 
-			TcpClient.Connect(hostNameOrIpAddress, port);
-
-			if (TcpClient.Connected)
-				ConnectedToServer?.Invoke(null, TcpClient);
-			StartRxThread();
-
+			TcpClient.BeginConnect(hostNameOrIpAddress, port, OnClientConnected, TcpClient);
 			return this;
 		}
 
-		private void StartRxThread()
+		private void OnClientConnected(IAsyncResult ar)
 		{
-			if (_rxThread != null) { return; }
-
-			_rxThread = new Thread(ListenerLoop);
-			_rxThread.IsBackground = true;
-			_rxThread.Start();
-		}
-
-		public SimpleTcpClient Disconnect()
-		{
-			if (TcpClient == null) { return this; }
-			DisconnectedFromTheServer?.Invoke(null, TcpClient);
-			TcpClient.Close();
-			TcpClient = null;
-			return this;
-		}
-
-		public TcpClient TcpClient { get; set; } = null;
-
-		private void ListenerLoop(object state)
-		{
-			while (!QueueStop)
-			{
-				try
-				{
-					RunLoopStep();
-				}
-				catch
-				{
-
-				}
-
-				Thread.Sleep(ReadLoopIntervalMs);
-			}
-
-			_rxThread = null;
-		}
-
-		private void RunLoopStep()
-		{
-			if (TcpClient == null) { return; }
-			if (TcpClient.Connected == false) { return; }
-
-			int bytesAvailable = TcpClient.Available;
-			if (bytesAvailable == 0)
-			{
-				//Thread.Sleep(10);
+			TcpClient client = ar.AsyncState as TcpClient;
+			if (client == null)
 				return;
-			}
-
-			List<byte> bytesReceived = new List<byte>();
-
-			while (TcpClient.Available > 0 && TcpClient.Connected)
+			try
 			{
-				byte[] nextByte = new byte[1];
-				TcpClient.Client.Receive(nextByte, 0, 1, SocketFlags.None);
-				bytesReceived.AddRange(nextByte);
-			}
+				if (!client.Connected)
+					return;
 
-			if (bytesReceived.Count > 0)
-			{
-				NotifyEndTransmissionRx(TcpClient, bytesReceived.ToArray());
-				bytesReceived.Clear();
+				client.EndConnect(ar); //MAY BE BUG!
+				ConnectedToServer?.Invoke(null, client);
+
+				SocketSession travkaLox = new SocketSession(client);
+				travkaLox.OnDataReceived += ClientDataReceived;
+				travkaLox.OnSocketException += () =>
+				{
+					DisconnectedFromTheServer?.Invoke(this, travkaLox.Socket);
+					travkaLox.Dispose();
+					travkaLox = null;
+				};
+				travkaLox.BeginRead();
 			}
+			catch(Exception ex)
+			{
+				Console.WriteLine($"Error {ex.Message} | {ex.StackTrace}");
+			}
+		}
+
+		private void ClientDataReceived(byte[] data, TcpClient client)
+		{
+			NotifyEndTransmissionRx(client, data);
 		}
 
 		private void NotifyEndTransmissionRx(TcpClient client, byte[] rawPacket)
@@ -131,15 +91,16 @@ namespace SimpleTCPPlus.Client
 				DataReceived?.Invoke(this, wrap);
 		}
 
-		public void Write(byte[] data)
+		public void Write(byte[] rawPacket)
 		{
-			if (TcpClient == null) { throw new Exception("Cannot send data to a null TcpClient (check to see if Connect was called)"); }
-			TcpClient.GetStream().Write(data, 0, data.Length);
+			if (!TcpClient.Connected)
+				return;
+			TcpClient.GetStream().Write(rawPacket, 0, rawPacket.Length);
 		}
 
 		public void WritePacket(Packet pack, bool security = true)
 		{
-			Thread.Sleep(75);
+			//Thread.Sleep(75);
 			if(security)
 				Write(PacketUtils.PacketToBytes(SecurityPackets.EncryptPacket(pack)));
 			else
@@ -178,29 +139,29 @@ namespace SimpleTCPPlus.Client
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposedValue)
-			{
-				if (disposing)
-				{
-					// TODO: dispose managed state (managed objects).
+			//if (!disposedValue)
+			//{
+			//	if (disposing)
+			//	{
+			//		// TODO: dispose managed state (managed objects).
 
-				}
+			//	}
 
-				// TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-				// TODO: set large fields to null.
-				QueueStop = true;
-				if (TcpClient != null)
-				{
-					try
-					{
-						TcpClient.Close();
-					}
-					catch { }
-					TcpClient = null;
-				}
+			//	// TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+			//	// TODO: set large fields to null.
+			//	//QueueStop = true;
+			//	if (TcpClient != null)
+			//	{
+			//		try
+			//		{
+			//			TcpClient.Close();
+			//		}
+			//		catch { }
+			//		TcpClient = null;
+			//	}
 
-				disposedValue = true;
-			}
+			//	disposedValue = true;
+			//}
 		}
 
 		// TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.

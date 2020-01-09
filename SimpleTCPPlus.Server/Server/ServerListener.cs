@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SimpleTCPPlus.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -12,15 +13,20 @@ namespace SimpleTCPPlus.Server
     internal class ServerListener
     {
         public List<TcpClient> ConnectedClients;
-        public List<TcpClient> DisconnectedClients;
+        public List<TcpClient> DisconnectPool;
         private SimpleTcpServer _parent = null;
-
         public int ConnectedClientsCount => ConnectedClients.Count;
+        internal bool QueueStop { get; set; }
+        internal IPAddress IPAddress { get; private set; }
+        internal int Port { get; private set; }
+        internal int ReadLoopIntervalMs { get; set; }
+
+        internal TcpListenerEx Listener { get; } = null;
 
         internal ServerListener(SimpleTcpServer parentServer, IPAddress ipAddress, int port)
         {
             ConnectedClients = new List<TcpClient>();
-            DisconnectedClients = new List<TcpClient>();
+            DisconnectPool = new List<TcpClient>();
 
             QueueStop = false;
             _parent = parentServer;
@@ -29,88 +35,85 @@ namespace SimpleTCPPlus.Server
             ReadLoopIntervalMs = 10;
 
             Listener = new TcpListenerEx(ipAddress, port);
-            Listener.Start();
 
             ThreadPool.QueueUserWorkItem(ListenerLoop);
         }
-
-        internal bool QueueStop { get; set; }
-        internal IPAddress IPAddress { get; private set; }
-        internal int Port { get; private set; }
-        internal int ReadLoopIntervalMs { get; set; }
-
-        internal TcpListenerEx Listener { get; } = null;
 
 
 		
 	    private void ListenerLoop(object state)
         {
-            while (!QueueStop)
-            {
-                try
-                {
-                    RunLoopStep();
-                }
-                catch 
-                {
+            Listener.Start();
+            Listener.BeginAcceptTcpClient(OnClientAccepted, Listener);
+        }
 
-                }
-
-                Thread.Sleep(ReadLoopIntervalMs);
-            }
+        private void StopListener()
+        {
+            //Close all sockets//
             Listener.Stop();
         }
 
-	    
-	    private bool IsSocketConnected(Socket s)
-	    {
-            return !((s.Poll(1000, SelectMode.SelectRead) && (s.Available == 0)) || !s.Connected);
-        }
-
-        private void RunLoopStep()
+        private void OnClientAccepted(IAsyncResult ar)
         {
-            if (DisconnectedClients.Count > 0)
+            TcpListenerEx listener = ar.AsyncState as TcpListenerEx;
+            if (listener == null)
+                return;
+            try
             {
-                var disconnectedClients = DisconnectedClients.ToArray();
-                DisconnectedClients.Clear();
-
-                foreach (var disC in disconnectedClients)
+                SocketSession session = new SocketSession(listener.EndAcceptTcpClient(ar));
+                session.OnDataReceived += (s, x) => _parent.NotifyEndTransmissionRx(s, x);
+                session.OnSocketException += () =>
                 {
-                    ConnectedClients.Remove(disC);
-                    _parent.NotifyClientDisconnected(this, disC);
-                }
+                    _parent.NotifyClientDisconnected(this, session.Socket);
+                    session.Socket.Dispose();
+                    session = null;
+                };
+                ConnectedClients.Add(session.Socket);
+                _parent.NotifyClientConnected(this, session.Socket);
+                session.BeginRead();
             }
-
-            if (Listener.Pending())
+            catch { }
+            finally
             {
-                var newClient = Listener.AcceptTcpClient();
-                ConnectedClients.Add(newClient);
-                _parent.NotifyClientConnected(this, newClient);
-            }
-
-            foreach (TcpClient tc in ConnectedClients) {
-
-                if (!IsSocketConnected(tc.Client))
-                    DisconnectedClients.Add(tc);
-
-                if (tc.Available == 0)
-                    return;
-
-                List<byte> bytesReceived = new List<byte>();
-
-                while (tc.Available > 0 && tc.Connected)
-                {
-                    byte[] nextByte = new byte[1];
-                    tc.Client.Receive(nextByte, 0, 1, SocketFlags.None);
-                    bytesReceived.AddRange(nextByte);
-                }
-
-                if (bytesReceived.Count > 0)
-                {
-                    _parent.NotifyEndTransmissionRx(bytesReceived.ToArray(), tc);
-                    bytesReceived.Clear();
-                }
+                listener.BeginAcceptTcpClient(OnClientAccepted, listener);
             }
         }
+        //private void OnClientRead(IAsyncResult ar)
+        //{
+        //    StateObject obj = ar.AsyncState as StateObject;
+        //    if (obj == null)
+        //        return;
+        //    try
+        //    {
+        //        if (!obj.WorkClient.Connected)
+        //            return;
+        //        int read = obj.WorkClient.Client.EndReceive(ar);
+
+        //        if (read > 0 && obj.WorkClient.Connected)
+        //        {
+        //            obj.Message.Write(obj.buffer, 0, read);
+        //            obj.WorkClient.Client.BeginReceive(obj.buffer, 0, obj.buffer.Length, 0, OnClientRead, obj);
+        //        }
+        //        else
+        //            OnMessageReceived(obj);
+        //    }
+        //    catch(Exception ex)
+        //    {
+        //        Console.WriteLine($"{ex.Message}\n{ex.StackTrace}");
+        //        _parent.NotifyClientDisconnected(this, obj.WorkClient);
+        //        obj.WorkClient.Close();
+        //        obj.Message.Close();
+        //        obj = null;
+        //    }
+        //    //finally
+        //    //{
+        //    //    if (obj != null)
+        //    //        obj.WorkClient.Client.BeginReceive(obj.buffer, 0, obj.buffer.Length, 0, OnClientRead, obj);
+        //    //}
+        //}
+        //private void OnMessageReceived(StateObject ctx)
+        //{
+        //    _parent.NotifyEndTransmissionRx(ctx.Message.ToArray(), ctx.WorkClient);
+        //}
     }
 }

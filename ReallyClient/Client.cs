@@ -21,13 +21,17 @@ namespace ReallyClient
                 Console.WriteLine("Connected to the server!");
                 client.WritePacket(new Packet("SECURITY DATA", "Security packet"), true);
             };
+            client.DisconnectedFromTheServer += (x, c) =>
+            {
+                Console.WriteLine("Disconnected!");
+            };
             while (!client.TcpClient.Connected)
             {
                 try
                 {
                     client = client.Connect("127.0.0.1", 6124);
                 }
-                catch { Console.WriteLine("Reconnecting..."); }
+                catch { }
             }
             new Thread(() => { while (true) { } }).Start();
         }
