@@ -10,7 +10,7 @@ namespace ReallyClient
     {
         static void Main(string[] args)
         {
-            SimpleTcpClient client = new SimpleTcpClient(System.Reflection.Assembly.GetExecutingAssembly());
+            SimpleTcpClient client = new SimpleTcpClient(System.Reflection.Assembly.GetExecutingAssembly(), new ClientConfig("127.0.0.1", 6124));
             client.DataReceived += (s, pack) =>
             {
                 Console.WriteLine($"PACKET:\n{pack.Packet.PacketType}");
@@ -25,13 +25,10 @@ namespace ReallyClient
             {
                 Console.WriteLine("Disconnected!");
             };
-            while (!client.TcpClient.Connected)
+            while (!client.Connect())
             {
-                try
-                {
-                    client = client.Connect("127.0.0.1", 6124);
-                }
-                catch { }
+                Console.WriteLine("Reconnecting...");
+                Thread.Sleep(100);
             }
             new Thread(() => { while (true) { } }).Start();
         }

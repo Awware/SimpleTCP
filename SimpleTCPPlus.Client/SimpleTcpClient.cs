@@ -13,10 +13,11 @@ namespace SimpleTCPPlus.Client
 {
 	public class SimpleTcpClient : IDisposable
 	{
-		public SimpleTcpClient(System.Reflection.Assembly packets)
+		public ClientConfig Config;
+		public SimpleTcpClient(System.Reflection.Assembly packets, ClientConfig cfg)
 		{
-			ReadLoopIntervalMs = 10;
-			TcpClient = new TcpClient();
+			Config = cfg;
+			//TcpClient = new TcpClient();
 			PacketLoader = new GlobalPacketLoader(packets);
 			ClientPackets = PacketLoader.LoadPackets<IClientPacket>();
 		}
@@ -30,35 +31,57 @@ namespace SimpleTCPPlus.Client
 
 		public string PacketInQue { get; set; } = "";
 
-		internal int ReadLoopIntervalMs { get; set; }
+		//internal int ReadLoopIntervalMs { get; set; }
 
 		public TcpClient TcpClient { get; set; } = null;
 
-		public SimpleTcpClient Connect(string hostNameOrIpAddress, int port)
-		{
-			if (string.IsNullOrEmpty(hostNameOrIpAddress))
-			{
-				throw new ArgumentNullException("hostNameOrIpAddress");
-			}
+		//public SimpleTcpClient Connect(string hostNameOrIpAddress, int port)
+		//{
+		//	if (string.IsNullOrEmpty(hostNameOrIpAddress))
+		//	{
+		//		throw new ArgumentNullException("hostNameOrIpAddress");
+		//	}
+		//	//TcpClient = new TcpClient();
+		//	TcpClient.BeginConnect(hostNameOrIpAddress, port, OnClientConnected, null);
+		//	return this;
+		//}
 
-			TcpClient.BeginConnect(hostNameOrIpAddress, port, OnClientConnected, TcpClient);
-			return this;
-		}
-
-		private void OnClientConnected(IAsyncResult ar)
+		public bool Connect()
 		{
-			TcpClient client = ar.AsyncState as TcpClient;
-			if (client == null)
-				return;
+			if(TcpClient != null && TcpClient.Connected)
+				return true;
 			try
 			{
-				if (!client.Connected)
+				TcpClient = new TcpClient();
+				TcpClient.Connect(Config.ServerAddress, Config.ServerPort);
+			}
+			catch
+			{
+				if (TcpClient != null && TcpClient.Connected)
+					TcpClient.Close();
+			}
+			if (TcpClient != null && TcpClient.Connected)
+			{
+				OnClientConnected();
+				return true;
+			}
+			return false;
+		}
+
+		private void OnClientConnected()
+		{
+			//TcpClient client = ar.AsyncState as TcpClient;
+			//if (client == null)
+			//	return;
+			try
+			{
+				if (!TcpClient.Connected)
 					return;
 
-				client.EndConnect(ar); //MAY BE BUG!
-				ConnectedToServer?.Invoke(null, client);
+				//TcpClient.EndConnect(ar); //MAY BE BUG!
+				ConnectedToServer?.Invoke(null, TcpClient);
 
-				SocketSession travkaLox = new SocketSession(client);
+				SocketSession travkaLox = new SocketSession(TcpClient);
 				travkaLox.OnDataReceived += ClientDataReceived;
 				travkaLox.OnSocketException += () =>
 				{
